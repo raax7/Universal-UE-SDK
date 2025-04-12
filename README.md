@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-	<a href="https://discord.gg/QB2aafth4T">Discord Server</a> |
+	<a href="https://discord.com/invite/r2f8CHbrRF">Discord Server</a> |
 	<a href="https://github.com/raax7/Universal-UE-SDK/issues">Report an Issue</a> |
 	<a href="https://github.com/Encryqed/Dumper-7">Dumper-7</a>
 </p>
