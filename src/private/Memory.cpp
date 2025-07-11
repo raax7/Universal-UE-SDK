@@ -34,7 +34,8 @@ namespace SDK::Memory
 
     std::byte* IterateAll(hat::signature_view Signature, const std::string& Section, const std::function<bool(std::byte*)>& It)
     {
-        std::span<std::byte> Data = hat::process::get_section_data(hat::process::get_process_module(), Section);
+        auto Module = hat::process::get_process_module();
+        std::span<std::byte> Data = Module.get_section_data(Section);
         if (Data.empty())
             return nullptr;
 
