@@ -109,7 +109,7 @@ bool ListActorNamesAndLocations()
         std::string ActorName = Obj->Name().ToString();
 
         // Output the actor name and position.
-        std::cout << ActorName << std::endl;
+        std::cout << ActorName << '\n';
         std::cout << "X: " << ActorPos.X << "\nY: " << ActorPos.Y << "\nZ: " << ActorPos.Z << "\n\n";
     }
 
