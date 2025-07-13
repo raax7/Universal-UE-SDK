@@ -1,6 +1,7 @@
 #pragma once
 #include <uesdk/FMemory.hpp>
 #include <uesdk/Macros.hpp>
+
 #include <ostream>
 
 // Thanks to https://github.com/Fischsalat/UnrealContainers for proper TArray, FString and TArrayIterator support.

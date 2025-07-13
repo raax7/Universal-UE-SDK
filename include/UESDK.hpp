@@ -4,6 +4,7 @@
 #include <uesdk/ObjectArray.hpp>
 #include <uesdk/State.hpp>
 #include <uesdk/UESDKStatus.hpp>
+#include <uesdk/PECallWrapper.hpp>
 #include <uesdk/UnrealContainers.hpp>
 #include <uesdk/UnrealEnums.hpp>
 #include <uesdk/UnrealObjects.hpp>

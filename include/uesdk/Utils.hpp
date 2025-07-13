@@ -7,16 +7,22 @@ namespace SDK
     template <size_t N>
     struct StringLiteral
     {
-        char Value[N];
+        char Value[N] {};
 
         constexpr StringLiteral(const char (&Str)[N])
         {
-            std::copy_n(Str, N, Value);
+            for (size_t i = 0; i < N; ++i)
+                Value[i] = Str[i];
         }
 
-        constexpr const char* c_str() const
+        constexpr const char* c_str() const { return Value; }
+
+        constexpr bool operator==(const StringLiteral<N>& other) const
         {
-            return Value;
+            for (size_t i = 0; i < N; ++i)
+                if (Value[i] != other.Value[i])
+                    return false;
+            return true;
         }
     };
 }

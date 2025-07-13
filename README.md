@@ -70,8 +70,10 @@ if (Status != SDK::Status::Success)
 After you've done this you can safely use the SDK. Here is an example of listing every AActor's name and location.
 ```C++
 // UE4 uses float for matrices, UE5 uses double.
+using MatrixType = float;
+
 struct FVector {
-    float X, Y, Z;
+    MatrixType X, Y, Z;
 };
 
 bool ListActorNamesAndLocations()
@@ -84,20 +86,22 @@ bool ListActorNamesAndLocations()
     // Loop through every UObject.
     for (int i = 0; i < SDK::GObjects->Num(); i++) {
         SDK::UObject* Obj = SDK::GObjects->GetByIndex(i);
-        
+
         // Check if the object is valid, not a default object and is or inherits from AActor.
         if (!Obj || Obj->IsDefaultObject() || !Obj->IsA(ActorClass))
             continue;
 
-        // Use UObject::CallAuto to call the UFunction, this way the library will automatically setup the parameters struct for you.
-        FVector ActorPos = Obj->CallAuto<"Actor", "K2_GetActorLocation", FVector>();
+        // Use PECallWrapper to call the UFunction, this way the library will automatically setup the parameters struct for you.
+        static SDK::PECallWrapper<"Actor", "K2_GetActorLocation", FVector()> K2_GetActorLocation;
+
+        FVector ActorPos = K2_GetActorLocation.CallAuto(Obj);
         std::string ActorName = Obj->Name().ToString();
-        
+
         // Output the actor name and position.
         std::cout << ActorName << std::endl;
         std::cout << "X: " << ActorPos.X << "\nY: " << ActorPos.Y << "\nZ: " << ActorPos.Z << "\n\n";
     }
-    
+
     return true;
 }
 ```

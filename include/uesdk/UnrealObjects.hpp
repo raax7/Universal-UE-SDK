@@ -4,6 +4,7 @@
 #include <uesdk/UnrealEnums.hpp>
 #include <uesdk/UnrealTypes.hpp>
 #include <uesdk/Utils.hpp>
+
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -27,14 +28,6 @@ namespace SDK
         UObject() = delete;
         ~UObject() = delete;
 
-    protected:
-        struct ArgInfo
-        {
-            int32_t Offset;
-            int32_t Size;
-            bool IsOutParm;
-        };
-
     public:
         void** VFT;
         DECLARE_GETTER_SETTER(int32_t, Flags);
@@ -55,42 +48,15 @@ namespace SDK
         void ProcessEvent(class UFunction* Function, void* Parms);
 
         /**
-         * @brief Calls a ProcessEvent function, automatically handling the parameter structure.
-         * @brief This function requires the following:
-         * @brief - All arguments must match the order of the UFunction.
-         * @brief - Output arguments are only supported using pointers, not references.
-         * @brief - Pointers to output arguments can be larger than the actual struct; only the real size of the struct will be copied.
-         *
-         * @tparam ClassName and FunctionName - Used to force each template instance to be unique.
-         * @tparam ReturnType - The return type of the function, void by default.
-         * @tparam ...Args - Types of the arguments to be sent to the UFunction.
-         * @param[in] Function - A pointer to the UFunction. If it is nullptr, the UFunction will be found using the ClassName and FunctionName.
-         * @param[in,out] ...args - Arguments to be sent to the UFunction.
-         *
-         * @return The result of the UFunction call, if there is a return type.
-         *
-         * @throws std::invalid_argument - If no Function pointer was passed and finding the function failed.
-         * @throws std::invalid_argument - If an output argument is not a pointer.
-         * @throws std::bad_alloc - If allocating memory for the parameters on the stack fails.
-         * @throws std::logic_error - If a return type was specified, but the UFunction does not have a return type.
-         */
-        template <StringLiteral ClassName, StringLiteral FunctionName, typename ReturnType = void, typename... Args>
-        ReturnType Call(class UFunction* Function, Args&&... args);
-
-        /** @brief Wrapper to automatically find the UFunction from the template parameters. For full documentation read the original UObject::Call function. */
-        template <StringLiteral ClassName, StringLiteral FunctionName, typename ReturnType = void, typename... Args>
-        ReturnType CallAuto(Args&&... args);
-
-        /**
          * @brief FastSearchSingle wrapper to retrieve the value of a member in a class.
          * @brief This does not search inhereted classes, so make sure you use the exact class name that contains the member you want.
-         * 
+         *
          * @tparam ClassName - The name of the UClass to search for the member in.
          * @tparam MemberName - The name of the member.
          * @tparam ObjectType - The type of the member.
-         * 
+         *
          * @return The value of the class member.
-         * 
+         *
          * @throws std::runtime_error - If FastSearchSingle was unable to find the member offset.
          */
         template <StringLiteral ClassName, StringLiteral MemberName, typename MemberType>
@@ -100,7 +66,7 @@ namespace SDK
         template <StringLiteral ClassName, StringLiteral MemberName, typename MemberType>
         MemberType* GetMemberPtr();
 
-         /**
+        /**
          * @brief FastSearchSingle wrapper to set the value of a member in a class.
          * @brief This does not search inhereted classes, so make sure you use the exact class name that contains the member you want.
          *
@@ -114,10 +80,6 @@ namespace SDK
          */
         template <StringLiteral ClassName, StringLiteral MemberName, typename MemberType>
         void SetMember(MemberType Value);
-
-    protected:
-        template <int N>
-        void InitializeArgInfo(UFunction* Function, std::array<ArgInfo, N>& ArgOffsets, size_t& ParmsSize, int32_t& ReturnValueOffset, int32_t& ReturnValueSize, bool& HasReturnValue) const;
     };
 
     class UField : public UObject
