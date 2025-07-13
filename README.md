@@ -1,4 +1,4 @@
-<h1 align="center">Universal-UE-SDK</h1>
+﻿<h1 align="center">Universal-UE-SDK</h1>
 
 <p align="center">A simple UE4 and UE5 wrapper for fundamental internal Unreal-Engine structs, classes and functionality.
 </p>
@@ -27,7 +27,8 @@
 
 
 ## Credits
-[Dumper-7](https://github.com/Encryqed/Dumper-7) - All of the universalness of this project is from Dumper-7. It was brought to my attention that about 50% of the source code is completely copied from them, and I apologise for that. Dumper-7 is by far the best UE-SDK dumper now. If you decide to star or use this repo then **please** go over to Dumper-7 and star them.
+- [Dumper-7](https://github.com/Encryqed/Dumper-7) - Most of the fundamental structures and offset-finding methods are taken from Dumper-7, so huge credit to them. This project would not be possible without their open-source contributions. If you need a static SDK dumper for any Unreal Engine game, I highly recommend checking out Dumper-7.
+- [libhat](https://github.com/BasedInc/libhat) - A fast and easy-to-use pattern matcher, offering additional abstractions as well.
 
 
 ## Project Info
@@ -38,6 +39,16 @@ I only plan to support UE4 and UE5 with this project, UE3 is not planned.
 This project is designed to help simplify the process of making an Unreal-Engine mod support multiple Unreal-Engine versions. This project offers simple and useful wrappers for fundamental features of Unreal-Engine such as UObject, UClass, FName, FString, TArray, etc.
 ### What this project is NOT
 This project is NOT designed to be a complete SDK with other fundamental classes like AActor, APlayerController, UWorld, UEngine, etc. This is simply a framework for making creating those classes and structures significantly easier. This project will not be able to support modified versions of Unreal-Engine, I only plan to support base UE4 and UE5 versions.
+
+### Differences from Dumper-7
+Although this project takes a lot of inspiration from Dumper-7, it serves a different purpose.  
+Dumper-7 generates a static SDK that is tied to a specific game build, whereas this project focuses on providing wrappers for more dynamic, runtime SDK usage.
+| Feature                   | Dumper-7 | Universal-UE-SDK     |
+| ------------------------- | -------- | -------------------- |
+| Core struct dumps         | ✅        | ✅ (wrapped)       |
+| Static SDK generation     | ✅        | ❌ (not the goal)  |
+| Runtime SDK generation    | ❌        | ✅                 |
+| Wrappers and abstraction  | ❌        | ✅                 |
 
 
 ## How to Help
@@ -53,7 +64,7 @@ If you wish to use this library with CMake and don't know how, there are plenty 
 ### Using the library
 Every function that you can call in the library should have thorough documentation, so if you are wondering what a function does simply read its documentation.
 
-To use the library, first you need to include UESDK.hpp and 
+To use the library, first you need to include ``UESDK.hpp``.
 ```C++
 #include <UESDK.hpp>
 ```
