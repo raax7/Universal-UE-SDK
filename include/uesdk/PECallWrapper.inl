@@ -14,7 +14,7 @@ namespace SDK
     inline constexpr bool dependent_false = false;
 
     template <StringLiteral ClassName, StringLiteral FunctionName, typename ReturnType, typename... Args>
-    ReturnType PECallWrapperImpl<ClassName, FunctionName, ReturnType, Args...>::Call(UObject* Obj, UFunction* Function, Args&&... args)
+    ReturnType PECallWrapperImpl<ClassName, FunctionName, ReturnType, Args...>::Call(UObject* Obj, UFunction* Function, Args... args)
     {
         constexpr size_t NumArgs = sizeof...(Args);
         static FunctionArgInfo<NumArgs> FunctionArgs = {};
@@ -34,7 +34,7 @@ namespace SDK
 
         WriteInputArgs(Parms, FunctionArgs, std::forward<Args>(args)...);
         Obj->ProcessEventAsNative(Function, Parms);
-        WriteOutputArgs(Parms, FunctionArgs, args...);
+        WriteOutputArgs(Parms, FunctionArgs, std::forward<Args>(args)...);
 
         if constexpr (!std::is_void_v<ReturnType>) {
             if (!FunctionArgs.HasReturnValue)
@@ -52,7 +52,7 @@ namespace SDK
     }
 
     template <StringLiteral ClassName, StringLiteral FunctionName, typename ReturnType, typename... Args>
-    ReturnType PECallWrapperImpl<ClassName, FunctionName, ReturnType, Args...>::CallAuto(UObject* Obj, Args&&... args)
+    ReturnType PECallWrapperImpl<ClassName, FunctionName, ReturnType, Args...>::CallAuto(UObject* Obj, Args... args)
     {
         static UFunction* Function = nullptr;
 

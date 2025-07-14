@@ -11,8 +11,8 @@ namespace SDK
     struct PECallWrapperImpl
     {
     public:
-        ReturnType Call(UObject* Obj, UFunction* Function, Args&&... args);
-        ReturnType CallAuto(UObject* Obj, Args&&... args);
+        ReturnType Call(UObject* Obj, UFunction* Function, Args... args);
+        ReturnType CallAuto(UObject* Obj, Args... args);
 
     private:
         static constexpr size_t kMaxStackAllocSize = 4096;
@@ -114,16 +114,16 @@ namespace SDK
          * @throws std::logic_error - If a return type was specified, but the UFunction does not have a return type.
          */
         template <typename... Args>
-        auto Call(UObject* Obj, UFunction* Function, Args&&... args)
+        auto Call(UObject* Obj, UFunction* Function, Args... args)
         {
-            return Base::Call(Obj, Function, std::forward<Args>(args)...);
+            return Base::Call(Obj, Function, args...);
         }
 
         /** @brief Wrapper to automatically find UFunction from template parameters. For full documentation read PECallWrapper::Call. */
         template <typename... Args>
-        auto CallAuto(UObject* Obj, Args&&... args)
+        auto CallAuto(UObject* Obj, Args... args)
         {
-            return Base::CallAuto(Obj, std::forward<Args>(args)...);
+            return Base::CallAuto(Obj, args...);
         }
     };
 }
