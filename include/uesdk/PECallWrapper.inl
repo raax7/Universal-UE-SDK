@@ -1,4 +1,6 @@
 #pragma once
+#include <uesdk/PECallWrapper.hpp>
+
 #include <iostream>
 #include <mutex>
 
@@ -20,8 +22,16 @@ namespace SDK
         static FunctionArgInfo<NumArgs> FunctionArgs = {};
 
         if constexpr (std::is_void_v<ReturnType> && NumArgs == 0) {
-            Obj->ProcessEventAsNative(Function, nullptr);
+            Obj->ProcessEvent(Function, nullptr);
             return;
+        }
+
+        // TODO: Add support for non-trivially copyable types like TArray in functions like GetAllActorsOfClass
+        constexpr bool IsVoidRetType = std::is_void_v<ReturnType>;
+        static_assert((std::is_trivially_copyable_v<std::decay_t<Args>> && ...), "All argument types must be trivially copyable");
+        if constexpr (!IsVoidRetType) {
+            static_assert(std::is_trivially_copyable_v<std::decay_t<ReturnType>>,
+                "Return type must be trivially copyable if not void");
         }
 
         static std::once_flag SetupOnce;
@@ -33,16 +43,14 @@ namespace SDK
         uint8_t* Parms = AllocateParams(FunctionArgs.ParmsSize, UsedHeap);
 
         WriteInputArgs(Parms, FunctionArgs, std::forward<Args>(args)...);
-        Obj->ProcessEventAsNative(Function, Parms);
+        Obj->ProcessEvent(Function, Parms);
         WriteOutputArgs(Parms, FunctionArgs, std::forward<Args>(args)...);
 
-        if constexpr (!std::is_void_v<ReturnType>) {
+        if constexpr (!IsVoidRetType) {
             if (!FunctionArgs.HasReturnValue)
-                throw std::logic_error("Missing return value in UFunction!");
+                throw std::logic_error("Mismatched return type: '" + Function->GetFullName() + "' expects no return value, but template specifies non-void return type");
 
             ReturnType Return;
-            static_assert(std::is_trivially_copyable_v<ReturnType>, "Return type must be trivially copyable");
-
             std::memcpy(&Return, Parms + FunctionArgs.ReturnValueOffset, std::min<int32_t>(FunctionArgs.ReturnValueSize, sizeof(ReturnType)));
             CleanupParams(Parms, UsedHeap);
             return Return;
@@ -60,7 +68,7 @@ namespace SDK
         static std::once_flag FindOnce;
         std::call_once(FindOnce, [] {
             if (!FastSearchSingle(FSUFunction(ClassName.c_str(), FunctionName.c_str(), &Function))) {
-                throw std::invalid_argument("Failed to automatically find UFunction!");
+                throw std::invalid_argument("Failed to automatically find UFunction");
             }
         });
 
@@ -127,21 +135,26 @@ namespace SDK
         auto WriteOutputArg = [Parms](auto& Arg, ArgInfo& Info) {
             using ArgType = std::decay_t<decltype(Arg)>;
 
-            if constexpr (std::is_pointer_v<ArgType>) {
+            // lvalue reference check takes priority to correctly parse types like void*&
+            if constexpr (std::is_lvalue_reference_v<decltype(Arg)>) {
+                // TODO: Somehow improve this check. Compiler won't know if an argument is output or not
+                //static_assert(!std::is_const_v<std::remove_reference_t<decltype(Arg)>>, "Output reference must not be const");
+                std::memcpy(std::addressof(Arg), Parms + Info.Offset, Info.Size);
+            }
+            else if constexpr (std::is_pointer_v<ArgType>) {
                 constexpr bool IsVoidPtr = std::is_void_v<std::remove_pointer_t<ArgType>>;
                 constexpr bool IsWritable = is_writable_pointer<ArgType>::value;
+                static_assert(IsWritable && !IsVoidPtr, "Output argument pointer must be writable and not void*");
 
-                if constexpr (!IsWritable || IsVoidPtr)
-                    throw std::invalid_argument("Output argument must be writable!");
+                // TODO: Somehow improve this check. Compiler won't know if an argument is output or not
+                //static_assert(!std::is_const_v<std::remove_pointer_t<ArgType>>, "Output argument pointer must not be pointer to const");
 
+                // TODO: Ensure this won't cause a debugging nightmare with how gracefully we handle nullptr output params
                 if (Arg)
                     std::memcpy(Arg, Parms + Info.Offset, sizeof(*Arg));
             }
-            else if constexpr (std::is_lvalue_reference_v<decltype(Arg)>) {
-                std::memcpy(std::addressof(Arg), Parms + Info.Offset, Info.Size);
-            }
             else {
-                static_assert(false, "Output argument must be a pointer or non-const lvalue reference");
+                static_assert(dependent_false<ArgType>, "Output argument must be a pointer or non-const lvalue reference");
             }
         };
 
@@ -153,6 +166,8 @@ namespace SDK
     template <size_t N>
     void PECallWrapperImpl<ClassName, FunctionName, ReturnType, Args...>::InitializeArgInfo(const UFunction* Function, FunctionArgInfo<N>& FunctionArgs)
     {
+        static_assert(sizeof...(Args) == N, "Number of template Args must match the function parameter count");
+
         FunctionArgs.ParmsSize = Function->ParmsSize();
         FunctionArgs.ReturnValueOffset = Function->ReturnValueOffset();
         FunctionArgs.HasReturnValue = FunctionArgs.ReturnValueOffset != UINT16_MAX;

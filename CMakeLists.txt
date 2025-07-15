@@ -33,3 +33,6 @@ target_include_directories(UESDK PUBLIC
 target_link_libraries(UESDK PUBLIC
     libhat
 )
+
+enable_testing()
+add_subdirectory(tests)

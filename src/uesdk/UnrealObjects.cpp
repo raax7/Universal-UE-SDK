@@ -79,13 +79,6 @@ namespace SDK
 
         return "None";
     }
-    void UObject::ProcessEventAsNative(class UFunction* Function, void* Parms)
-    {
-        EFunctionFlags FunctionFlags = Function->FunctionFlags();
-        Function->FunctionFlags(FunctionFlags | FUNC_Native);
-        ProcessEvent(Function, Parms);
-        Function->FunctionFlags(FunctionFlags);
-    }
     void UObject::ProcessEvent(UFunction* Function, void* Parms)
     {
         using ProcessEvent_t = void (*)(UObject*, UFunction*, void*);

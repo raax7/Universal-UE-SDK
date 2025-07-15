@@ -3,6 +3,7 @@
 #include <uesdk/Utils.hpp>
 
 #include <array>
+#include <atomic>
 #include <exception>
 
 namespace SDK
@@ -85,14 +86,15 @@ namespace SDK
     template <StringLiteral ClassName, StringLiteral FunctionName, typename FunctionSig>
     struct PECallWrapper : public PECallWrapperSelector<ClassName, FunctionName, FunctionSig>::type
     {
-    public:
-        static inline int InstanceCounter = 0;
+    private:
+        static inline std::atomic<int> InstanceCounter;
 
+    public:
         PECallWrapper()
         {
-            ++InstanceCounter;
-            if (InstanceCounter > 1)
-                throw std::runtime_error("Duplicate PECallWrapper found! Make sure ClassName and FunctionName are accurate");
+            int Count = ++InstanceCounter;
+            if (Count > 1)
+                throw std::runtime_error("Duplicate PECallWrapper found! Make sure ClassName and FunctionName are unique and accurate");
         }
 
     public:
