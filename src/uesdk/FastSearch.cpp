@@ -23,14 +23,14 @@ namespace SDK
 
                 switch (It->Type) {
                 case FS_UOBJECT: {
-                    if (Obj->HasTypeFlag(It->Object.RequiredType) && Obj->Name() == It->Object.ObjectName) {
+                    if (Obj->HasTypeFlag(It->Object.RequiredType) && Obj->Name == It->Object.ObjectName) {
                         *It->Object.OutObject = Obj;
                         Found = true;
                     }
                     break;
                 }
                 case FS_UENUM: {
-                    if (!Obj->HasTypeFlag(CASTCLASS_UEnum) || Obj->Name() != It->Enum.EnumName)
+                    if (!Obj->HasTypeFlag(CASTCLASS_UEnum) || Obj->Name != It->Enum.EnumName)
                         break;
 
                     UEnum* ObjEnum = reinterpret_cast<UEnum*>(Obj);
@@ -47,7 +47,7 @@ namespace SDK
                     break;
                 }
                 case FS_UFUNCTION: {
-                    if (!Obj->HasTypeFlag(CASTCLASS_UStruct) || Obj->Name() != It->Function.ClassName)
+                    if (!Obj->HasTypeFlag(CASTCLASS_UStruct) || Obj->Name != It->Function.ClassName)
                         break;
 
                     UStruct* ObjStruct = reinterpret_cast<UStruct*>(Obj);
@@ -61,7 +61,7 @@ namespace SDK
                     break;
                 }
                 case FS_PROPERTY: {
-                    if (!Obj->HasTypeFlag(CASTCLASS_UStruct) || Obj->Name() != It->Property.ClassName)
+                    if (!Obj->HasTypeFlag(CASTCLASS_UStruct) || Obj->Name != It->Property.ClassName)
                         break;
 
                     UStruct* ObjStruct = reinterpret_cast<UStruct*>(Obj);

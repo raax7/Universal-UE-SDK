@@ -62,7 +62,7 @@ namespace SDK::Offsets
         inline Offset_t NumParms = OFFSET_NOT_FOUND;
         inline Offset_t ParmsSize = OFFSET_NOT_FOUND;
         inline Offset_t ReturnValueOffset = OFFSET_NOT_FOUND;
-        inline Offset_t FuncOffset = OFFSET_NOT_FOUND;
+        inline Offset_t Func = OFFSET_NOT_FOUND;
     }
     namespace UDataTable
     {

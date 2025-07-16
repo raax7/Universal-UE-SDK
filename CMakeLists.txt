@@ -34,5 +34,7 @@ target_link_libraries(UESDK PUBLIC
     libhat
 )
 
+add_subdirectory(examples)
+
 enable_testing()
 add_subdirectory(tests)

@@ -1,6 +1,6 @@
-#include <uesdk/UnrealTypes.hpp>
 #include <uesdk/ObjectArray.hpp>
-#include <private/Offsets.hpp>
+#include <uesdk/Offsets.hpp>
+#include <uesdk/UnrealTypes.hpp>
 
 namespace SDK
 {
@@ -115,10 +115,10 @@ namespace SDK
     }
     bool FWeakObjectPtr::operator==(const class UObject* Other) const
     {
-        return ObjectIndex == Other->Index();
+        return ObjectIndex == Other->Index;
     }
     bool FWeakObjectPtr::operator!=(const class UObject* Other) const
     {
-        return ObjectIndex != Other->Index();
+        return ObjectIndex != Other->Index;
     }
 }

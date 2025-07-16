@@ -33,7 +33,8 @@
 
 ## Project Info
 ### Unreal-Engine version support
-I only plan to support UE4 and UE5 with this project, UE3 is not planned.
+I only plan to support UE4 and UE5 with this project, UE3 is not planned.  
+Linux support is not planned.
 
 ### What this project is
 This project is designed to help simplify the process of making an Unreal-Engine mod support multiple Unreal-Engine versions. This project offers simple and useful wrappers for fundamental features of Unreal-Engine such as UObject, UClass, FName, FString, TArray, etc.
@@ -64,6 +65,8 @@ If you wish to use this library with CMake and don't know how, there are plenty 
 ### Using the library
 Every function that you can call in the library should have thorough documentation, so if you are wondering what a function does simply read its documentation.
 
+To see complete examples, take a look at the `examples` folder.
+
 To use the library, first you need to include ``UESDK.hpp``.
 ```C++
 #include <UESDK.hpp>
@@ -78,7 +81,9 @@ if (Status != SDK::Status::Success)
 }
 ```
 
-After you've done this you can safely use the SDK. Here is an example of listing every AActor's name and location.
+After you've done this you can safely use the SDK.  
+
+Here is an example of listing every AActor's name and location:
 ```C++
 // UE4 uses float for matrices, UE5 uses double.
 using MatrixType = float;
@@ -106,7 +111,7 @@ bool ListActorNamesAndLocations()
         static SDK::PECallWrapper<"Actor", "K2_GetActorLocation", FVector()> K2_GetActorLocation;
 
         FVector ActorPos = K2_GetActorLocation.CallAuto(Obj);
-        std::string ActorName = Obj->Name().ToString();
+        std::string ActorName = Obj->Name.ToString();
 
         // Output the actor name and position.
         std::cout << ActorName << '\n';

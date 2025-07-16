@@ -1,50 +1,18 @@
 #pragma once
-#include <private/Offsets.hpp>
+#include <uesdk/Offsets.hpp>
 #include <uesdk/State.hpp>
 #include <uesdk/UnrealContainers.hpp>
 #include <uesdk/UnrealObjects.hpp>
 
 namespace SDK
 {
-    DEFINE_GETTER_SETTER(UObject, int32_t, Flags, Offsets::UObject::Flags)
-    DEFINE_GETTER_SETTER(UObject, int32_t, Index, Offsets::UObject::Index)
-    DEFINE_GETTER_SETTER(UObject, UClass*, Class, Offsets::UObject::Class)
-    DEFINE_GETTER_SETTER(UObject, FName, Name, Offsets::UObject::Name)
-    DEFINE_GETTER_SETTER(UObject, UObject*, Outer, Offsets::UObject::Outer)
-
-    DEFINE_GETTER_SETTER(UField, UField*, Next, Offsets::UField::Next);
-
-    DEFINE_GETTER_SETTER(UStruct, UStruct*, SuperStruct, Offsets::UStruct::SuperStruct);
-    DEFINE_GETTER_SETTER(UStruct, UField*, Children, Offsets::UStruct::Children);
-    DEFINE_GETTER_SETTER(UStruct, FField*, ChildProperties, Offsets::UStruct::ChildProperties);
-    DEFINE_GETTER_SETTER(UStruct, int32_t, PropertiesSize, Offsets::UStruct::PropertiesSize);
-    DEFINE_GETTER_SETTER(UStruct, int32_t, MinAlignment, Offsets::UStruct::MinAlignment);
-
-    DEFINE_GETTER_SETTER(UClass, EClassCastFlags, ClassCastFlags, Offsets::UClass::ClassCastFlags);
-    DEFINE_GETTER_SETTER(UClass, UObject*, ClassDefaultObject, Offsets::UClass::ClassDefaultObject);
-
-    DEFINE_GETTER_SETTER(UProperty, int32_t, Offset, Offsets::UProperty::Offset);
-    DEFINE_GETTER_SETTER(UProperty, int32_t, ElementSize, Offsets::UProperty::ElementSize);
-    DEFINE_GETTER_SETTER(UProperty, EPropertyFlags, PropertyFlags, Offsets::UProperty::PropertyFlags);
-
-    DEFINE_GETTER_SETTER(UEnum, TYPE_WRAPPER(TArray<TPair<FName, int64_t>>), Names, Offsets::UEnum::Names);
-
-    DEFINE_GETTER_SETTER(UFunction, EFunctionFlags, FunctionFlags, Offsets::UFunction::FunctionFlags);
-    DEFINE_GETTER_SETTER(UFunction, uint8_t, NumParms, Offsets::UFunction::NumParms);
-    DEFINE_GETTER_SETTER(UFunction, uint16_t, ParmsSize, Offsets::UFunction::ParmsSize);
-    DEFINE_GETTER_SETTER(UFunction, uint16_t, ReturnValueOffset, Offsets::UFunction::ReturnValueOffset);
-    DEFINE_GETTER_SETTER(UFunction, UFunction::FNativeFuncPtr, Func, Offsets::UFunction::FuncOffset);
-
-    DEFINE_GETTER_SETTER(UDataTable, UScriptStruct*, RowStruct, Offsets::UDataTable::RowStruct);
-    DEFINE_GETTER_SETTER(UDataTable, TYPE_WRAPPER(TMap<FName, uint8_t*>), RowMap, Offsets::UDataTable::RowMap);
-
     bool UObject::HasTypeFlag(EClassCastFlags TypeFlag) const
     {
-        return TypeFlag != CASTCLASS_None ? Class()->ClassCastFlags() & TypeFlag : true;
+        return TypeFlag != CASTCLASS_None ? Class->ClassCastFlags & TypeFlag : true;
     }
     bool UObject::IsA(UClass* Target) const
     {
-        for (UStruct* Super = Class(); Super; Super = Super->SuperStruct()) {
+        for (UStruct* Super = Class; Super; Super = Super->SuperStruct) {
             if (Super == Target) {
                 return true;
             }
@@ -54,22 +22,22 @@ namespace SDK
     }
     bool UObject::IsDefaultObject() const
     {
-        return ((Flags() & RF_ClassDefaultObject) == RF_ClassDefaultObject);
+        return ((Flags & RF_ClassDefaultObject) == RF_ClassDefaultObject);
     }
     std::string UObject::GetName() const
     {
-        return Name().ToString();
+        return Name.ToString();
     }
     std::string UObject::GetFullName() const
     {
-        if (Class()) {
+        if (Class) {
             std::string Temp;
 
-            for (UObject* NextOuter = Outer(); NextOuter; NextOuter = NextOuter->Outer()) {
+            for (UObject* NextOuter = Outer; NextOuter; NextOuter = NextOuter->Outer) {
                 Temp = NextOuter->GetName() + "." + Temp;
             }
 
-            std::string Name = Class()->GetName();
+            std::string Name = Class->GetName();
             Name += " ";
             Name += Temp;
             Name += GetName();
@@ -88,8 +56,8 @@ namespace SDK
 
     UField* UStruct::FindMember(const FName& Name, EClassCastFlags TypeFlag) const
     {
-        for (UField* Child = Children(); Child; Child = Child->Next()) {
-            if (Child->HasTypeFlag(TypeFlag) && Child->Name() == Name)
+        for (UField* Child = Children; Child; Child = Child->Next) {
+            if (Child->HasTypeFlag(TypeFlag) && Child->Name == Name)
                 return Child;
         }
 
@@ -100,7 +68,7 @@ namespace SDK
         PropertyInfo Result = { .Found = false };
 
         if (State::UsesFProperty) {
-            for (FField* Field = ChildProperties(); Field; Field = Field->Next) {
+            for (FField* Field = ChildProperties; Field; Field = Field->Next) {
                 if (!Field->HasTypeFlag(CASTCLASS_FProperty))
                     continue;
 
@@ -125,7 +93,7 @@ namespace SDK
             }
         }
         else {
-            for (UField* Child = Children(); Child; Child = Child->Next()) {
+            for (UField* Child = Children; Child; Child = Child->Next) {
                 if (!Child->HasTypeFlag(CASTCLASS_FProperty))
                     continue;
 
@@ -133,10 +101,10 @@ namespace SDK
                 if (!Property->HasPropertyFlag(PropertyFlag))
                     continue;
 
-                if (Child->Name() == Name) {
+                if (Child->Name == Name) {
                     Result.Found = true;
-                    Result.Flags = Child->Flags();
-                    Result.Offset = Property->Offset();
+                    Result.Flags = Child->Flags;
+                    Result.Offset = Property->Offset;
 
                     if (Property->HasTypeFlag(CASTCLASS_FBoolProperty)) {
                         UBoolProperty* BoolProperty = reinterpret_cast<UBoolProperty*>(Property);
@@ -159,7 +127,7 @@ namespace SDK
 
     bool UProperty::HasPropertyFlag(EPropertyFlags PropertyFlag) const
     {
-        return PropertyFlag != CPF_None ? PropertyFlags() & PropertyFlag : true;
+        return PropertyFlag != CPF_None ? PropertyFlags & PropertyFlag : true;
     }
 
     bool UBoolProperty::IsNativeBool() const
@@ -175,22 +143,24 @@ namespace SDK
         uint8_t FieldMask = GetFieldMask();
 
         if (FieldMask != 0xFF) {
-            if (FieldMask == 0x01)
+            switch (FieldMask) {
+            case 0x01:
                 return 0;
-            if (FieldMask == 0x02)
+            case 0x02:
                 return 1;
-            if (FieldMask == 0x04)
+            case 0x04:
                 return 2;
-            if (FieldMask == 0x08)
+            case 0x08:
                 return 3;
-            if (FieldMask == 0x10)
+            case 0x10:
                 return 4;
-            if (FieldMask == 0x20)
+            case 0x20:
                 return 5;
-            if (FieldMask == 0x40)
+            case 0x40:
                 return 6;
-            if (FieldMask == 0x80)
+            case 0x80:
                 return 7;
+            }
         }
 
         return 0xFF;
@@ -198,7 +168,7 @@ namespace SDK
 
     int64_t UEnum::FindEnumerator(const FName& Name) const
     {
-        auto NamesArray = Names();
+        auto NamesArray = Names;
         for (auto& It : NamesArray) {
             if (It.Key() == Name) {
                 return It.Value();

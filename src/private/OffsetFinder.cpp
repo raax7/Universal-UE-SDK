@@ -1,14 +1,17 @@
-#include <private/Memory.hpp>
-#include <private/Offsets.hpp>
 #include <uesdk/FMemory.hpp>
 #include <uesdk/FastSearch.hpp>
 #include <uesdk/ObjectArray.hpp>
+#include <uesdk/Offsets.hpp>
 #include <uesdk/State.hpp>
 #include <uesdk/UESDKStatus.hpp>
+
+#include <private/Memory.hpp>
+
 #include <libhat.hpp>
+
+#include <format>
 #include <memory>
 #include <sstream>
-#include <format>
 
 // Most of the member offset finding is based off of https://github.com/Encryqed/Dumper-7, so credits to them.
 
@@ -90,8 +93,8 @@ namespace SDK::OffsetFinder
 {
     int32_t Find_UField_Next()
     {
-        uint8_t* KismetSystemLibraryChild = reinterpret_cast<uint8_t*>(((UStruct*)(KismetSystemLibrary))->Children());
-        uint8_t* KismetStringLibraryChild = reinterpret_cast<uint8_t*>(((UStruct*)(KismetStringLibrary))->Children());
+        uint8_t* KismetSystemLibraryChild = reinterpret_cast<uint8_t*>(((UStruct*)(KismetSystemLibrary))->Children);
+        uint8_t* KismetStringLibraryChild = reinterpret_cast<uint8_t*>(((UStruct*)(KismetStringLibrary))->Children);
 
         return Memory::GetValidPointerOffset(KismetSystemLibraryChild, KismetStringLibraryChild, Offsets::UObject::Outer + 0x8, 0x48);
     }
@@ -284,9 +287,7 @@ namespace SDK::OffsetFinder
     int32_t Find_UFunction_Func()
     {
         for (int i = 0x40; i < 0x140; i += 8) {
-            if (Memory::IsInProcessRange(*reinterpret_cast<uintptr_t*>((uintptr_t)WasInputKeyJustPressed + i)) &&
-                Memory::IsInProcessRange(*reinterpret_cast<uintptr_t*>((uintptr_t)ToggleSpeaking + i)) &&
-                Memory::IsInProcessRange(*reinterpret_cast<uintptr_t*>((uintptr_t)SwitchLevel + i))) {
+            if (Memory::IsInProcessRange(*reinterpret_cast<uintptr_t*>((uintptr_t)WasInputKeyJustPressed + i)) && Memory::IsInProcessRange(*reinterpret_cast<uintptr_t*>((uintptr_t)ToggleSpeaking + i)) && Memory::IsInProcessRange(*reinterpret_cast<uintptr_t*>((uintptr_t)SwitchLevel + i))) {
                 return i;
             }
         }
@@ -526,7 +527,7 @@ namespace SDK::OffsetFinder
         GET_OFFSET(Find_UFunction_NumParms, Offsets::UFunction::NumParms, Status::Failed_UFunction_NumParms);
         GET_OFFSET(Find_UFunction_ParmsSize, Offsets::UFunction::ParmsSize, Status::Failed_UFunction_ParmsSize);
         GET_OFFSET(Find_UFunction_ReturnValueOffset, Offsets::UFunction::ReturnValueOffset, Status::Failed_UFunction_ReturnValueOffset);
-        GET_OFFSET(Find_UFunction_Func, Offsets::UFunction::FuncOffset, Status::Failed_UFunction_FuncOffset);
+        GET_OFFSET(Find_UFunction_Func, Offsets::UFunction::Func, Status::Failed_UFunction_FuncOffset);
 
         if (State::UsesFProperty) {
             GET_OFFSET(Find_UStruct_ChildProperties, Offsets::UStruct::ChildProperties, Status::Failed_UStruct_ChildProperties);

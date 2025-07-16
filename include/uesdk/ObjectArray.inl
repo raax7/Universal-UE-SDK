@@ -30,7 +30,7 @@ namespace SDK
             if (!Object)
                 continue;
 
-            if (Object->HasTypeFlag(RequiredType) && Object->Name() == fName)
+            if (Object->HasTypeFlag(RequiredType) && Object->Name == fName)
                 return static_cast<UEType*>(Object);
         }
 
@@ -48,7 +48,7 @@ namespace SDK
             if (!Object)
                 continue;
 
-            if (Object->Name() == fName && Object->Outer()->Name() == fOuter)
+            if (Object->Name == fName && Object->Outer->Name == fOuter)
                 return static_cast<UEType*>(Object);
         }
 

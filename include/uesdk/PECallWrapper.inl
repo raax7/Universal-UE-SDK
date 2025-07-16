@@ -21,6 +21,7 @@ namespace SDK
         constexpr size_t NumArgs = sizeof...(Args);
         static FunctionArgInfo<NumArgs> FunctionArgs = {};
 
+        // TODO: Add check to ensure that UFunction reflects this function signature
         if constexpr (std::is_void_v<ReturnType> && NumArgs == 0) {
             Obj->ProcessEvent(Function, nullptr);
             return;
@@ -168,13 +169,13 @@ namespace SDK
     {
         static_assert(sizeof...(Args) == N, "Number of template Args must match the function parameter count");
 
-        FunctionArgs.ParmsSize = Function->ParmsSize();
-        FunctionArgs.ReturnValueOffset = Function->ReturnValueOffset();
+        FunctionArgs.ParmsSize = Function->ParmsSize;
+        FunctionArgs.ReturnValueOffset = Function->ReturnValueOffset;
         FunctionArgs.HasReturnValue = FunctionArgs.ReturnValueOffset != UINT16_MAX;
 
         int ArgIndex = 0;
         if (State::UsesFProperty) {
-            for (FField* Field = Function->ChildProperties(); Field; Field = Field->Next) {
+            for (FField* Field = Function->ChildProperties; Field; Field = Field->Next) {
                 if (!Field->HasTypeFlag(CASTCLASS_FProperty))
                     continue;
 
@@ -190,18 +191,18 @@ namespace SDK
             }
         }
         else {
-            for (UField* Child = Function->Children(); Child; Child = Child->Next()) {
+            for (UField* Child = Function->Children; Child; Child = Child->Next) {
                 if (!Child->HasTypeFlag(CASTCLASS_FProperty))
                     continue;
 
                 UProperty* Property = static_cast<UProperty*>(Child);
                 if (Property->HasPropertyFlag(CPF_ReturnParm)) {
-                    if (Property->Offset() == FunctionArgs.ReturnValueOffset)
-                        FunctionArgs.ReturnValueSize = Property->ElementSize();
+                    if (Property->Offset == FunctionArgs.ReturnValueOffset)
+                        FunctionArgs.ReturnValueSize = Property->ElementSize;
                     continue;
                 }
 
-                FunctionArgs.ArgOffsets[ArgIndex] = { Property->Offset(), Property->ElementSize(), Property->HasPropertyFlag(CPF_OutParm) };
+                FunctionArgs.ArgOffsets[ArgIndex] = { Property->Offset, Property->ElementSize, Property->HasPropertyFlag(CPF_OutParm) };
                 ArgIndex++;
             }
         }

@@ -1,6 +1,6 @@
 #pragma once
-#include <uesdk/UnrealTypes.hpp>
 #include <uesdk/UnrealEnums.hpp>
+#include <uesdk/UnrealTypes.hpp>
 #include <vector>
 
 namespace SDK

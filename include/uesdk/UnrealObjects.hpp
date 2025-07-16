@@ -1,5 +1,6 @@
 #pragma once
 #include <uesdk/Macros.hpp>
+#include <uesdk/Offsets.hpp>
 #include <uesdk/UnrealContainers.hpp>
 #include <uesdk/UnrealEnums.hpp>
 #include <uesdk/UnrealTypes.hpp>
@@ -11,17 +12,6 @@
 
 namespace SDK
 {
-    struct PropertyInfo
-    {
-        bool Found = false;
-        int32_t Flags;
-        int32_t Offset;
-        uint8_t ByteMask;
-    };
-}
-
-namespace SDK
-{
     class UObject
     {
     private:
@@ -30,11 +20,11 @@ namespace SDK
 
     public:
         void** VFT;
-        DECLARE_GETTER_SETTER(int32_t, Flags);
-        DECLARE_GETTER_SETTER(int32_t, Index);
-        DECLARE_GETTER_SETTER(class UClass*, Class);
-        DECLARE_GETTER_SETTER(class FName, Name);
-        DECLARE_GETTER_SETTER(class UObject*, Outer);
+        UESDK_UPROPERTY_OFFSET(int32_t, Flags, Offsets::UObject::Flags);
+        UESDK_UPROPERTY_OFFSET(int32_t, Index, Offsets::UObject::Index);
+        UESDK_UPROPERTY_OFFSET(class UClass*, Class, Offsets::UObject::Class);
+        UESDK_UPROPERTY_OFFSET(class FName, Name, Offsets::UObject::Name);
+        UESDK_UPROPERTY_OFFSET(class UObject*, Outer, Offsets::UObject::Outer);
 
     public:
         bool HasTypeFlag(EClassCastFlags TypeFlag) const;
@@ -44,7 +34,6 @@ namespace SDK
         std::string GetName() const;
         std::string GetFullName() const;
 
-        void ProcessEventAsNative(class UFunction* Function, void* Parms);
         void ProcessEvent(class UFunction* Function, void* Parms);
 
         /**
@@ -89,7 +78,7 @@ namespace SDK
         ~UField() = delete;
 
     public:
-        DECLARE_GETTER_SETTER(class UField*, Next);
+        UESDK_UPROPERTY_OFFSET(class UField*, Next, SDK::Offsets::UField::Next);
     };
 
     class UStruct : public UField
@@ -99,11 +88,11 @@ namespace SDK
         ~UStruct() = delete;
 
     public:
-        DECLARE_GETTER_SETTER(class UStruct*, SuperStruct);
-        DECLARE_GETTER_SETTER(class UField*, Children);
-        DECLARE_GETTER_SETTER(FField*, ChildProperties); // May return nullptr depending if FProperties are used.
-        DECLARE_GETTER_SETTER(int32_t, PropertiesSize);
-        DECLARE_GETTER_SETTER(int32_t, MinAlignment);
+        UESDK_UPROPERTY_OFFSET(class UStruct*, SuperStruct, SDK::Offsets::UStruct::SuperStruct);
+        UESDK_UPROPERTY_OFFSET(class UField*, Children, SDK::Offsets::UStruct::Children);
+        UESDK_UPROPERTY_OFFSET(FField*, ChildProperties, SDK::Offsets::UStruct::ChildProperties); // May return nullptr depending if FProperties are used.
+        UESDK_UPROPERTY_OFFSET(int32_t, PropertiesSize, SDK::Offsets::UStruct::PropertiesSize);
+        UESDK_UPROPERTY_OFFSET(int32_t, MinAlignment, SDK::Offsets::UStruct::MinAlignment);
 
     public:
         /**
@@ -144,8 +133,8 @@ namespace SDK
         ~UClass() = delete;
 
     public:
-        DECLARE_GETTER_SETTER(EClassCastFlags, ClassCastFlags);
-        DECLARE_GETTER_SETTER(UObject*, ClassDefaultObject);
+        UESDK_UPROPERTY_OFFSET(EClassCastFlags, ClassCastFlags, SDK::Offsets::UClass::ClassCastFlags);
+        UESDK_UPROPERTY_OFFSET(UObject*, ClassDefaultObject, SDK::Offsets::UClass::ClassDefaultObject);
     };
 
     class UProperty : public UField
@@ -158,9 +147,9 @@ namespace SDK
         bool HasPropertyFlag(EPropertyFlags PropertyFlag) const;
 
     public:
-        DECLARE_GETTER_SETTER(int32_t, Offset);
-        DECLARE_GETTER_SETTER(int32_t, ElementSize);
-        DECLARE_GETTER_SETTER(EPropertyFlags, PropertyFlags);
+        UESDK_UPROPERTY_OFFSET(int32_t, Offset, SDK::Offsets::UProperty::Offset);
+        UESDK_UPROPERTY_OFFSET(int32_t, ElementSize, SDK::Offsets::UProperty::ElementSize);
+        UESDK_UPROPERTY_OFFSET(EPropertyFlags, PropertyFlags, SDK::Offsets::UProperty::PropertyFlags);
     };
 
     class UBoolProperty : public UProperty
@@ -183,7 +172,7 @@ namespace SDK
         ~UEnum() = delete;
 
     public:
-        DECLARE_GETTER_SETTER(TYPE_WRAPPER(TArray<TPair<FName, int64_t>>), Names);
+        UESDK_UPROPERTY_OFFSET(UESDK_TYPE(TArray<TPair<FName, int64_t>>), Names, SDK::Offsets::UEnum::Names);
 
     public:
         /**
@@ -204,11 +193,11 @@ namespace SDK
         using FNativeFuncPtr = void (*)(void* Context, void* TheStack, void* Result);
 
     public:
-        DECLARE_GETTER_SETTER(EFunctionFlags, FunctionFlags);
-        DECLARE_GETTER_SETTER(uint8_t, NumParms);
-        DECLARE_GETTER_SETTER(uint16_t, ParmsSize);
-        DECLARE_GETTER_SETTER(uint16_t, ReturnValueOffset);
-        DECLARE_GETTER_SETTER(FNativeFuncPtr, Func);
+        UESDK_UPROPERTY_OFFSET(EFunctionFlags, FunctionFlags, SDK::Offsets::UFunction::FunctionFlags);
+        UESDK_UPROPERTY_OFFSET(uint8_t, NumParms, SDK::Offsets::UFunction::NumParms);
+        UESDK_UPROPERTY_OFFSET(uint16_t, ParmsSize, SDK::Offsets::UFunction::ParmsSize);
+        UESDK_UPROPERTY_OFFSET(uint16_t, ReturnValueOffset, SDK::Offsets::UFunction::ReturnValueOffset);
+        UESDK_UPROPERTY_OFFSET(FNativeFuncPtr, Func, SDK::Offsets::UFunction::Func);
     };
 
     class UDataTable : public UObject
@@ -218,8 +207,8 @@ namespace SDK
         ~UDataTable() = delete;
 
     public:
-        DECLARE_GETTER_SETTER(UScriptStruct*, RowStruct);
-        DECLARE_GETTER_SETTER(TYPE_WRAPPER(TMap<FName, uint8_t*>), RowMap);
+        UESDK_UPROPERTY_OFFSET(UScriptStruct*, RowStruct, SDK::Offsets::UDataTable::RowStruct);
+        UESDK_UPROPERTY_OFFSET(UESDK_TYPE(TMap<FName, uint8_t*>), RowMap, SDK::Offsets::UDataTable::RowMap);
     };
 }
 
