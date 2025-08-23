@@ -86,17 +86,6 @@ namespace SDK
     template <StringLiteral ClassName, StringLiteral FunctionName, typename FunctionSig>
     struct PECallWrapper : public PECallWrapperSelector<ClassName, FunctionName, FunctionSig>::type
     {
-    private:
-        static inline std::atomic<int> InstanceCounter;
-
-    public:
-        PECallWrapper()
-        {
-            int Count = ++InstanceCounter;
-            if (Count > 1)
-                throw std::runtime_error("Duplicate PECallWrapper found! Make sure ClassName and FunctionName are unique and accurate");
-        }
-
     public:
         using Base = typename PECallWrapperSelector<ClassName, FunctionName, FunctionSig>::type;
 

@@ -24,26 +24,50 @@ namespace SDK
 /* @brief Small fix for templated types */
 #define UESDK_TYPE(...) __VA_ARGS__
 
+// TODO: Add better support for blueprint classes
+/* @brief Sets up StaticClass() and GetDefaultObj() functions. */
+#define UESDK_DEFINEOBJECT(ClassNameStr, Type)                                          \
+    static UClass* StaticClass()                                                        \
+    {                                                                                   \
+        static UClass* Clss = nullptr;                                                  \
+        if (!Clss)                                                                      \
+            Clss = GObjects->FindObjectFast<UClass>(ClassNameStr, CASTCLASS_UClass);    \
+        return Clss;                                                                    \
+    }                                                                                   \
+    static Type* GetDefaultObj()                                                        \
+    {                                                                                   \
+        static Type* Default = nullptr;                                                 \
+        if (!Default)                                                                   \
+            Default = static_cast<Type*>(StaticClass()->ClassDefaultObject);            \
+        return Default;                                                                 \
+    }                                                                                   \
+    static constexpr const char* g_ClassName = ClassNameStr
+
 /* @brief Internal implementation details of UESDK_UPROPERTY */
-#define UESDK_UPROPERTY_IMPL(Type, Name)                                                                                               \
-    static const PropertyInfo& getpropinfo_##Name(bool SuppressFailure = false)                                                        \
-    {                                                                                                                                  \
-        static PropertyInfo Prop = GetPropertyInfo(ClassName /* assumes STATICCLASS_DEFAULTOBJECT is used */, #Name, SuppressFailure); \
-        return Prop;                                                                                                                   \
-    }                                                                                                                                  \
-    static const bool ispropvalid_##Name()                                                                                             \
-    {                                                                                                                                  \
-        const PropertyInfo& Prop = getpropinfo_##Name();                                                                               \
-        return Prop.Found;                                                                                                             \
+#define UESDK_UPROPERTY_IMPL(Type, Name)                                                                                    \
+    static const PropertyInfo& getpropinfo_##Name(bool SuppressFailure = false)                                             \
+    {                                                                                                                       \
+        static PropertyInfo Prop = GObjects->FindObjectFast<UStruct>(g_ClassName, CASTCLASS_UStruct)->FindProperty(#Name);  \
+        return Prop;                                                                                                        \
+    }                                                                                                                       \
+    static const bool ispropvalid_##Name()                                                                                  \
+    {                                                                                                                       \
+        const PropertyInfo& Prop = getpropinfo_##Name();                                                                    \
+        return Prop.Found;                                                                                                  \
     }
 
 /* @brief Standard macro for defining a UPROPERTY. Does not support bit-fields */
 #define UESDK_UPROPERTY(Type, Name)                                                    \
-    UESDK_UPROPERTY_IMPL                                                               \
+    UESDK_UPROPERTY_IMPL(Type, Name)                                                   \
     inline void putprop_##Name(const Type& v)                                          \
     {                                                                                  \
         const PropertyInfo& Prop = getpropinfo_##Name();                               \
         *reinterpret_cast<Type*>((uint8_t*)this + Prop.Offset) = const_cast<Type&>(v); \
+    }                                                                                  \
+    inline void putprop_##Name(Type& v)                                                \
+    {                                                                                  \
+        const PropertyInfo& Prop = getpropinfo_##Name();                               \
+        *reinterpret_cast<Type*>((uint8_t*)this + Prop.Offset) = v;                    \
     }                                                                                  \
     inline Type& getprop_##Name() const                                                \
     {                                                                                  \
@@ -54,7 +78,7 @@ namespace SDK
 
 /* @brief Macro for UPROPERTIES that are bit-fields with fallback to handling as a bool */
 #define UESDK_UPROPERTY_BITFIELD(Name)                                                   \
-    UESDK_UPROPERTY_IMPL                                                                 \
+    UESDK_UPROPERTY_IMPL(Type, Name)                                                     \
     inline void putprop_##Name(const bool& v)                                            \
     {                                                                                    \
         const PropertyInfo& Prop = getpropinfo_##Name();                                 \
@@ -79,7 +103,7 @@ namespace SDK
     __declspec(property(get = getprop_##Name, put = putprop_##Name)) bool Name
 
 /* @brief UESDK_UPROPERTY macro for user-defined offsets */
-#define UESDK_UPROPERTY_OFFSET(Type, Name, Offset)                                      \
+#define UESDK_UPROPERTY_OFFSET(Type, Name, Offset)                                \
     inline void putprop_##Name(const Type& v)                                     \
     {                                                                             \
         *reinterpret_cast<Type*>((uint8_t*)this + Offset) = const_cast<Type&>(v); \

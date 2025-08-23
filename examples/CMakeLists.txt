@@ -20,7 +20,7 @@ function(add_example_variant VARIANT)
     target_compile_definitions(${TARGET_NAME} PRIVATE ${VARIANT})
 
     target_link_libraries(${TARGET_NAME} PRIVATE
-        UESDK
+        uesdk
     )
 endfunction()
 
