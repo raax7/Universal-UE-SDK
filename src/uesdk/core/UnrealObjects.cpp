@@ -1,8 +1,8 @@
 #pragma once
 #include <uesdk/Offsets.hpp>
 #include <uesdk/State.hpp>
-#include <uesdk/UnrealContainers.hpp>
-#include <uesdk/UnrealObjects.hpp>
+#include <uesdk/core/UnrealContainers.hpp>
+#include <uesdk/core/UnrealObjects.hpp>
 
 namespace SDK
 {

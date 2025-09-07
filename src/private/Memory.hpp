@@ -1,6 +1,8 @@
 #pragma once
-#include <uesdk/Macros.hpp>
+#include <uesdk/helpers/PropertyInfo.hpp>
+
 #include <libhat.hpp>
+
 #include <Windows.h>
 #include <functional>
 #include <vector>

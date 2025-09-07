@@ -1,5 +1,6 @@
-#include <uesdk/ObjectArray.hpp>
-#include <uesdk/UnrealObjects.hpp>
+#include <uesdk/core/ObjectArray.hpp>
+#include <uesdk/core/UnrealObjects.hpp>
+
 #include <cstdint>
 
 namespace SDK
@@ -31,6 +32,14 @@ namespace SDK
             m_ChunkedObjects = reinterpret_cast<Chunked_TUObjectArray*>(Objects);
         else
             m_FixedObjects = reinterpret_cast<Fixed_TUObjectArray*>(Objects);
+    }
+    bool TUObjectArray::IsChunked()
+    {
+        return m_IsChunked;
+    }
+    void* TUObjectArray::Get()
+    {
+        return m_IsChunked ? static_cast<void*>(m_ChunkedObjects) : static_cast<void*>(m_FixedObjects);
     }
     int32_t TUObjectArray::Num()
     {

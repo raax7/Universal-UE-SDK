@@ -1,6 +1,6 @@
 #pragma once
-#include <uesdk/UnrealContainers.hpp>
-#include <uesdk/UnrealEnums.hpp>
+#include <uesdk/core/UnrealContainers.hpp>
+#include <uesdk/core/UnrealEnums.hpp>
 
 namespace SDK
 {
@@ -13,10 +13,14 @@ namespace SDK
         FName(const std::wstring& Str)
             : FName(Str.c_str())
         { }
+        FName(std::string_view str)
+            : FName(str.data())
+        { }
+        FName(std::wstring_view str)
+            : FName(str.data())
+        { }
         FName(const char* Str);
         FName(const wchar_t* Str);
-        FName() = default;
-        ~FName() = default;
 
     public:
         inline bool operator==(const FName& Other) const { return ComparisonIndex == Other.ComparisonIndex; }

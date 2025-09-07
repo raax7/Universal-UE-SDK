@@ -1,9 +1,9 @@
-#include <uesdk/FMemory.hpp>
-#include <uesdk/FastSearch.hpp>
-#include <uesdk/ObjectArray.hpp>
 #include <uesdk/Offsets.hpp>
 #include <uesdk/State.hpp>
-#include <uesdk/UESDKStatus.hpp>
+#include <uesdk/Status.hpp>
+#include <uesdk/core/FMemory.hpp>
+#include <uesdk/core/ObjectArray.hpp>
+#include <uesdk/helpers/FastSearch.hpp>
 
 #include <private/Memory.hpp>
 
@@ -461,7 +461,7 @@ namespace SDK::OffsetFinder
         return FuncIdx != OFFSET_NOT_FOUND;
     }
 
-    Status SetupMemberOffsets()
+    ESDKStatus SetupMemberOffsets()
     {
         std::vector<FSEntry> Search = {
             { FSUObject("PlayerController", &PlayerController) },
@@ -493,17 +493,17 @@ namespace SDK::OffsetFinder
             { FSUObject("ETraceTypeQuery", &ETraceTypeQuery) }
         };
         if (!FastSearch(Search))
-            return Status::Failed_FastSearchPass1;
+            return ESDKStatus::Failed_FastSearchPass1;
 
         // The order of the functions below is very important as there is a dependency chain.
         // Do not change the order.
 
-        GET_OFFSET(Find_UStruct_Children, Offsets::UStruct::Children, Status::Failed_UStruct_Children);
-        GET_OFFSET(Find_UField_Next, Offsets::UField::Next, Status::Failed_UField_Next);
-        GET_OFFSET(Find_UStruct_SuperStruct, Offsets::UStruct::SuperStruct, Status::Failed_UStruct_SuperStruct);
-        GET_OFFSET(Find_UStruct_PropertiesSize, Offsets::UStruct::PropertiesSize, Status::Failed_UStruct_PropertiesSize);
-        GET_OFFSET(Find_UStruct_MinAlignment, Offsets::UStruct::MinAlignment, Status::Failed_UStrct_MinAlignment);
-        GET_OFFSET(Find_UClass_ClassCastFlags, Offsets::UClass::ClassCastFlags, Status::Failed_UClass_ClassCastFlags);
+        GET_OFFSET(Find_UStruct_Children, Offsets::UStruct::Children, ESDKStatus::Failed_UStruct_Children);
+        GET_OFFSET(Find_UField_Next, Offsets::UField::Next, ESDKStatus::Failed_UField_Next);
+        GET_OFFSET(Find_UStruct_SuperStruct, Offsets::UStruct::SuperStruct, ESDKStatus::Failed_UStruct_SuperStruct);
+        GET_OFFSET(Find_UStruct_PropertiesSize, Offsets::UStruct::PropertiesSize, ESDKStatus::Failed_UStruct_PropertiesSize);
+        GET_OFFSET(Find_UStruct_MinAlignment, Offsets::UStruct::MinAlignment, ESDKStatus::Failed_UStrct_MinAlignment);
+        GET_OFFSET(Find_UClass_ClassCastFlags, Offsets::UClass::ClassCastFlags, ESDKStatus::Failed_UClass_ClassCastFlags);
 
         // In order to do the second pass, we required UClass::CastFlags.
 
@@ -519,38 +519,40 @@ namespace SDK::OffsetFinder
             { FSUFunction("Actor", "WasRecentlyRendered", &WasRecentlyRendered) },
         };
         if (!FastSearch(Search))
-            return Status::Failed_FastSearchPass2;
+            return ESDKStatus::Failed_FastSearchPass2;
 
-        GET_OFFSET(Find_UEnum_Names, Offsets::UEnum::Names, Status::Failed_UEnum_Names);
+        GET_OFFSET(Find_UEnum_Names, Offsets::UEnum::Names, ESDKStatus::Failed_UEnum_Names);
 
-        GET_OFFSET(Find_UFunction_FunctionFlags, Offsets::UFunction::FunctionFlags, Status::Failed_UFunction_FunctionFlags);
-        GET_OFFSET(Find_UFunction_NumParms, Offsets::UFunction::NumParms, Status::Failed_UFunction_NumParms);
-        GET_OFFSET(Find_UFunction_ParmsSize, Offsets::UFunction::ParmsSize, Status::Failed_UFunction_ParmsSize);
-        GET_OFFSET(Find_UFunction_ReturnValueOffset, Offsets::UFunction::ReturnValueOffset, Status::Failed_UFunction_ReturnValueOffset);
-        GET_OFFSET(Find_UFunction_Func, Offsets::UFunction::Func, Status::Failed_UFunction_FuncOffset);
+        GET_OFFSET(Find_UFunction_FunctionFlags, Offsets::UFunction::FunctionFlags, ESDKStatus::Failed_UFunction_FunctionFlags);
+        GET_OFFSET(Find_UFunction_NumParms, Offsets::UFunction::NumParms, ESDKStatus::Failed_UFunction_NumParms);
+        GET_OFFSET(Find_UFunction_ParmsSize, Offsets::UFunction::ParmsSize, ESDKStatus::Failed_UFunction_ParmsSize);
+        GET_OFFSET(Find_UFunction_ReturnValueOffset, Offsets::UFunction::ReturnValueOffset, ESDKStatus::Failed_UFunction_ReturnValueOffset);
+        GET_OFFSET(Find_UFunction_Func, Offsets::UFunction::Func, ESDKStatus::Failed_UFunction_FuncOffset);
 
         if (State::UsesFProperty) {
-            GET_OFFSET(Find_UStruct_ChildProperties, Offsets::UStruct::ChildProperties, Status::Failed_UStruct_ChildProperties);
+            GET_OFFSET(Find_UStruct_ChildProperties, Offsets::UStruct::ChildProperties, ESDKStatus::Failed_UStruct_ChildProperties);
         }
         else {
-            GET_OFFSET(Find_UProperty_Offset, Offsets::UProperty::Offset, Status::Failed_UProperty_Offset);
-            GET_OFFSET(Find_UProperty_ElementSize, Offsets::UProperty::ElementSize, Status::Failed_UProperty_ElementSize);
-            GET_OFFSET(Find_UProperty_PropertyFlags, Offsets::UProperty::PropertyFlags, Status::Failed_UProperty_PropertyFlags);
-            GET_OFFSET(Find_UBoolProperty_Base, Offsets::UBoolProperty::Base, Status::Failed_UBoolProperty_Base);
+            GET_OFFSET(Find_UProperty_Offset, Offsets::UProperty::Offset, ESDKStatus::Failed_UProperty_Offset);
+            GET_OFFSET(Find_UProperty_ElementSize, Offsets::UProperty::ElementSize, ESDKStatus::Failed_UProperty_ElementSize);
+            GET_OFFSET(Find_UProperty_PropertyFlags, Offsets::UProperty::PropertyFlags, ESDKStatus::Failed_UProperty_PropertyFlags);
+            GET_OFFSET(Find_UBoolProperty_Base, Offsets::UBoolProperty::Base, ESDKStatus::Failed_UBoolProperty_Base);
         }
 
-        GET_OFFSET(Find_UClass_ClassDefaultObject, Offsets::UClass::ClassDefaultObject, Status::Failed_UClass_ClassDefaultObject);
+        GET_OFFSET(Find_UClass_ClassDefaultObject, Offsets::UClass::ClassDefaultObject, ESDKStatus::Failed_UClass_ClassDefaultObject);
 
+        PropertyInfo RowStructProp {};
         Search = {
-            { FSProperty("DataTable", "RowStruct", &Offsets::UDataTable::RowStruct, nullptr) }
+            { FSProperty("DataTable", "RowStruct", &RowStructProp) }
         };
         if (!FastSearch(Search))
-            return Status::Failed_FastSearchPass3;
+            return ESDKStatus::Failed_FastSearchPass3;
 
         // In every version I've tested, this is correct.
+        Offsets::UDataTable::RowStruct = RowStructProp.Offset;
         Offsets::UDataTable::RowMap = Offsets::UDataTable::RowStruct + 0x8;
 
         State::SetupMemberOffsets = true;
-        return Status::Success;
+        return ESDKStatus::Success;
     }
 }

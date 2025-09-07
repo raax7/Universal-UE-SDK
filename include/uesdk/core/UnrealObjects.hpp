@@ -1,10 +1,10 @@
 #pragma once
-#include <uesdk/Macros.hpp>
 #include <uesdk/Offsets.hpp>
-#include <uesdk/UnrealContainers.hpp>
-#include <uesdk/UnrealEnums.hpp>
-#include <uesdk/UnrealTypes.hpp>
 #include <uesdk/Utils.hpp>
+#include <uesdk/core/UnrealContainers.hpp>
+#include <uesdk/core/UnrealEnums.hpp>
+#include <uesdk/core/UnrealTypes.hpp>
+#include <uesdk/helpers/ReflectionMacros.hpp>
 
 #include <memory>
 #include <stdexcept>
@@ -15,16 +15,21 @@ namespace SDK
     class UObject
     {
     private:
-        UObject() = delete;
-        ~UObject() = delete;
+        // TODO: Decide whether to delete or keep constructor and destructor.
+        //UObject() = delete;
+        //~UObject() = delete;
 
     public:
+        // clang-format off
+
         void** VFT;
-        UESDK_UPROPERTY_OFFSET(int32_t, Flags, Offsets::UObject::Flags);
-        UESDK_UPROPERTY_OFFSET(int32_t, Index, Offsets::UObject::Index);
-        UESDK_UPROPERTY_OFFSET(class UClass*, Class, Offsets::UObject::Class);
-        UESDK_UPROPERTY_OFFSET(class FName, Name, Offsets::UObject::Name);
-        UESDK_UPROPERTY_OFFSET(class UObject*, Outer, Offsets::UObject::Outer);
+        UESDK_UPROPERTY_OFFSET(int32_t,         Flags,  Offsets::UObject::Flags);
+        UESDK_UPROPERTY_OFFSET(int32_t,         Index,  Offsets::UObject::Index);
+        UESDK_UPROPERTY_OFFSET(class UClass*,   Class,  Offsets::UObject::Class);
+        UESDK_UPROPERTY_OFFSET(class FName,     Name,   Offsets::UObject::Name);
+        UESDK_UPROPERTY_OFFSET(class UObject*,  Outer,  Offsets::UObject::Outer);
+
+        // clang-format on
 
     public:
         bool HasTypeFlag(EClassCastFlags TypeFlag) const;
@@ -88,11 +93,15 @@ namespace SDK
         ~UStruct() = delete;
 
     public:
-        UESDK_UPROPERTY_OFFSET(class UStruct*, SuperStruct, SDK::Offsets::UStruct::SuperStruct);
-        UESDK_UPROPERTY_OFFSET(class UField*, Children, SDK::Offsets::UStruct::Children);
-        UESDK_UPROPERTY_OFFSET(FField*, ChildProperties, SDK::Offsets::UStruct::ChildProperties); // May return nullptr depending if FProperties are used.
-        UESDK_UPROPERTY_OFFSET(int32_t, PropertiesSize, SDK::Offsets::UStruct::PropertiesSize);
-        UESDK_UPROPERTY_OFFSET(int32_t, MinAlignment, SDK::Offsets::UStruct::MinAlignment);
+        // clang-format off
+
+        UESDK_UPROPERTY_OFFSET(class UStruct*,  SuperStruct,        SDK::Offsets::UStruct::SuperStruct);
+        UESDK_UPROPERTY_OFFSET(class UField*,   Children,           SDK::Offsets::UStruct::Children);
+        UESDK_UPROPERTY_OFFSET(FField*,         ChildProperties,    SDK::Offsets::UStruct::ChildProperties); // May return nullptr depending if FProperties are used.
+        UESDK_UPROPERTY_OFFSET(int32_t,         PropertiesSize,     SDK::Offsets::UStruct::PropertiesSize);
+        UESDK_UPROPERTY_OFFSET(int32_t,         MinAlignment,       SDK::Offsets::UStruct::MinAlignment);
+
+        // clang-format on
 
     public:
         /**
@@ -133,8 +142,12 @@ namespace SDK
         ~UClass() = delete;
 
     public:
-        UESDK_UPROPERTY_OFFSET(EClassCastFlags, ClassCastFlags, SDK::Offsets::UClass::ClassCastFlags);
-        UESDK_UPROPERTY_OFFSET(UObject*, ClassDefaultObject, SDK::Offsets::UClass::ClassDefaultObject);
+        // clang-format off
+
+        UESDK_UPROPERTY_OFFSET(EClassCastFlags, ClassCastFlags,     SDK::Offsets::UClass::ClassCastFlags);
+        UESDK_UPROPERTY_OFFSET(UObject*,        ClassDefaultObject, SDK::Offsets::UClass::ClassDefaultObject);
+
+        // clang-format on
     };
 
     class UProperty : public UField
@@ -147,9 +160,13 @@ namespace SDK
         bool HasPropertyFlag(EPropertyFlags PropertyFlag) const;
 
     public:
-        UESDK_UPROPERTY_OFFSET(int32_t, Offset, SDK::Offsets::UProperty::Offset);
-        UESDK_UPROPERTY_OFFSET(int32_t, ElementSize, SDK::Offsets::UProperty::ElementSize);
-        UESDK_UPROPERTY_OFFSET(EPropertyFlags, PropertyFlags, SDK::Offsets::UProperty::PropertyFlags);
+        // clang-format off
+
+        UESDK_UPROPERTY_OFFSET(int32_t,         Offset,         SDK::Offsets::UProperty::Offset);
+        UESDK_UPROPERTY_OFFSET(int32_t,         ElementSize,    SDK::Offsets::UProperty::ElementSize);
+        UESDK_UPROPERTY_OFFSET(EPropertyFlags,  PropertyFlags,  SDK::Offsets::UProperty::PropertyFlags);
+
+        // clang-format on
     };
 
     class UBoolProperty : public UProperty
@@ -193,11 +210,15 @@ namespace SDK
         using FNativeFuncPtr = void (*)(void* Context, void* TheStack, void* Result);
 
     public:
-        UESDK_UPROPERTY_OFFSET(EFunctionFlags, FunctionFlags, SDK::Offsets::UFunction::FunctionFlags);
-        UESDK_UPROPERTY_OFFSET(uint8_t, NumParms, SDK::Offsets::UFunction::NumParms);
-        UESDK_UPROPERTY_OFFSET(uint16_t, ParmsSize, SDK::Offsets::UFunction::ParmsSize);
-        UESDK_UPROPERTY_OFFSET(uint16_t, ReturnValueOffset, SDK::Offsets::UFunction::ReturnValueOffset);
-        UESDK_UPROPERTY_OFFSET(FNativeFuncPtr, Func, SDK::Offsets::UFunction::Func);
+        // clang-format off
+
+        UESDK_UPROPERTY_OFFSET(EFunctionFlags,  FunctionFlags,      SDK::Offsets::UFunction::FunctionFlags);
+        UESDK_UPROPERTY_OFFSET(uint8_t,         NumParms,           SDK::Offsets::UFunction::NumParms);
+        UESDK_UPROPERTY_OFFSET(uint16_t,        ParmsSize,          SDK::Offsets::UFunction::ParmsSize);
+        UESDK_UPROPERTY_OFFSET(uint16_t,        ReturnValueOffset,  SDK::Offsets::UFunction::ReturnValueOffset);
+        UESDK_UPROPERTY_OFFSET(FNativeFuncPtr,  Func,               SDK::Offsets::UFunction::Func);
+
+        // clang-format on
     };
 
     class UDataTable : public UObject
@@ -207,9 +228,13 @@ namespace SDK
         ~UDataTable() = delete;
 
     public:
-        UESDK_UPROPERTY_OFFSET(UScriptStruct*, RowStruct, SDK::Offsets::UDataTable::RowStruct);
-        UESDK_UPROPERTY_OFFSET(UESDK_TYPE(TMap<FName, uint8_t*>), RowMap, SDK::Offsets::UDataTable::RowMap);
+        // clang-format off
+
+        UESDK_UPROPERTY_OFFSET(UScriptStruct*,                      RowStruct,  SDK::Offsets::UDataTable::RowStruct);
+        UESDK_UPROPERTY_OFFSET(UESDK_TYPE(TMap<FName, uint8_t*>),   RowMap,     SDK::Offsets::UDataTable::RowMap);
+
+        // clang-format on
     };
 }
 
-#include <uesdk/UnrealObjects.inl>
+#include <uesdk/core/UnrealObjects.inl>

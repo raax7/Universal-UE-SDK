@@ -1,5 +1,5 @@
 #pragma once
-#include <uesdk/PECallWrapper.hpp>
+#include <uesdk/helpers/PECallWrapper.hpp>
 
 #include <iostream>
 #include <mutex>
@@ -53,11 +53,11 @@ namespace SDK
 
             ReturnType Return;
             std::memcpy(&Return, Parms + FunctionArgs.ReturnValueOffset, std::min<int32_t>(FunctionArgs.ReturnValueSize, sizeof(ReturnType)));
-            CleanupParams(Parms, UsedHeap);
+            CleanUpParams(Parms, UsedHeap);
             return Return;
         }
 
-        CleanupParams(Parms, UsedHeap);
+        CleanUpParams(Parms, UsedHeap);
     }
 
     template <StringLiteral ClassName, StringLiteral FunctionName, typename ReturnType, typename... Args>
@@ -98,7 +98,7 @@ namespace SDK
         void* AlignedPtr = Parms;
         size_t Space = BufferSize;
         if (!std::align(kAlignment, Size, AlignedPtr, Space)) {
-            CleanupParams(Parms, UsedHeap);
+            CleanUpParams(Parms, UsedHeap);
             throw std::bad_alloc();
         }
 
@@ -108,7 +108,7 @@ namespace SDK
     }
 
     template <StringLiteral ClassName, StringLiteral FunctionName, typename ReturnType, typename... Args>
-    void PECallWrapperImpl<ClassName, FunctionName, ReturnType, Args...>::CleanupParams(uint8_t* Parms, bool UsedHeap)
+    void PECallWrapperImpl<ClassName, FunctionName, ReturnType, Args...>::CleanUpParams(uint8_t* Parms, bool UsedHeap)
     {
         if (UsedHeap)
             delete[] Parms;
@@ -138,9 +138,13 @@ namespace SDK
 
             // lvalue reference check takes priority to correctly parse types like void*&
             if constexpr (std::is_lvalue_reference_v<decltype(Arg)>) {
-                // TODO: Somehow improve this check. Compiler won't know if an argument is output or not
-                //static_assert(!std::is_const_v<std::remove_reference_t<decltype(Arg)>>, "Output reference must not be const");
-                std::memcpy(std::addressof(Arg), Parms + Info.Offset, Info.Size);
+                using BaseType = std::remove_reference_t<decltype(Arg)>;
+                if constexpr (std::is_const_v<BaseType>) {
+                    throw std::runtime_error("Output lvalue reference parameter cannot be const!");
+                }
+                else {
+                    std::memcpy(std::addressof(Arg), Parms + Info.Offset, Info.Size);
+                }
             }
             else if constexpr (std::is_pointer_v<ArgType>) {
                 constexpr bool IsVoidPtr = std::is_void_v<std::remove_pointer_t<ArgType>>;
@@ -148,7 +152,7 @@ namespace SDK
                 static_assert(IsWritable && !IsVoidPtr, "Output argument pointer must be writable and not void*");
 
                 // TODO: Somehow improve this check. Compiler won't know if an argument is output or not
-                //static_assert(!std::is_const_v<std::remove_pointer_t<ArgType>>, "Output argument pointer must not be pointer to const");
+                // static_assert(!std::is_const_v<std::remove_pointer_t<ArgType>>, "Output argument pointer must not be pointer to const");
 
                 // TODO: Ensure this won't cause a debugging nightmare with how gracefully we handle nullptr output params
                 if (Arg)

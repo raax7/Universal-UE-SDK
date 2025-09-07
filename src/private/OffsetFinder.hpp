@@ -1,5 +1,5 @@
 #pragma once
-#include <uesdk/UESDKStatus.hpp>
+#include <uesdk/Status.hpp>
 
 namespace SDK::OffsetFinder
 {
@@ -10,5 +10,5 @@ namespace SDK::OffsetFinder
     bool FindAppendString();
     bool FindProcessEventIdx();
 
-    Status SetupMemberOffsets();
+    ESDKStatus SetupMemberOffsets();
 }

@@ -1,13 +1,15 @@
 #pragma once
-#include <uesdk/FMemory.hpp>
-#include <uesdk/FastSearch.hpp>
-#include <uesdk/ObjectArray.hpp>
 #include <uesdk/State.hpp>
-#include <uesdk/UESDKStatus.hpp>
-#include <uesdk/PECallWrapper.hpp>
-#include <uesdk/UnrealContainers.hpp>
-#include <uesdk/UnrealEnums.hpp>
-#include <uesdk/UnrealObjects.hpp>
+#include <uesdk/Status.hpp>
+#include <uesdk/core/Cast.hpp>
+#include <uesdk/core/FMemory.hpp>
+#include <uesdk/core/ObjectArray.hpp>
+#include <uesdk/core/UnrealContainers.hpp>
+#include <uesdk/core/UnrealEnums.hpp>
+#include <uesdk/core/UnrealObjects.hpp>
+#include <uesdk/helpers/FastSearch.hpp>
+#include <uesdk/helpers/PECallWrapper.hpp>
+#include <uesdk/helpers/ReflectionMacros.hpp>
 
 namespace SDK
 {
@@ -25,5 +27,5 @@ namespace SDK
      * @brief Initiates the core SDK. Should be called before any other interaction with the library.
      * @return SDK::Status result. Should be compared with SDK::Status::Success.
      */
-    Status Init();
+    ESDKStatus Init();
 }

@@ -1,6 +1,6 @@
-#include <uesdk/ObjectArray.hpp>
 #include <uesdk/Offsets.hpp>
-#include <uesdk/UnrealTypes.hpp>
+#include <uesdk/core/ObjectArray.hpp>
+#include <uesdk/core/UnrealTypes.hpp>
 
 namespace SDK
 {

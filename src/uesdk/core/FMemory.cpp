@@ -1,5 +1,5 @@
-#include <uesdk/FMemory.hpp>
 #include <uesdk/Offsets.hpp>
+#include <uesdk/core/FMemory.hpp>
 
 namespace SDK::FMemory
 {

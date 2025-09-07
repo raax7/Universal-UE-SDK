@@ -1,5 +1,6 @@
 #pragma once
 #include <uesdk/Macros.hpp>
+
 #include <cstdint>
 
 namespace SDK

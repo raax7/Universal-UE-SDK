@@ -1,6 +1,5 @@
 #pragma once
-#include <uesdk/FMemory.hpp>
-#include <uesdk/Macros.hpp>
+#include <uesdk/core/FMemory.hpp>
 
 #include <ostream>
 

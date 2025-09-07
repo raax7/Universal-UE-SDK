@@ -1,5 +1,7 @@
+#include <uesdk/core/UnrealContainers.hpp>
+
 #include <private/Offsets.hpp>
-#include <uesdk/UnrealContainers.hpp>
+
 #include <string>
 
 namespace SDK

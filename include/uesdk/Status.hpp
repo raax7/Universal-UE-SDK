@@ -2,9 +2,13 @@
 
 namespace SDK
 {
-    enum class Status
+    enum class ESDKStatus
     {
         Success = 0,
+
+        // Edge cases
+        //
+        Failed_AlreadySetup,
 
         // Function offsets and VFT indexes.
         //

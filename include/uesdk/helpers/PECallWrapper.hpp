@@ -1,6 +1,6 @@
 #pragma once
-#include <uesdk/UnrealObjects.hpp>
 #include <uesdk/Utils.hpp>
+#include <uesdk/core/UnrealObjects.hpp>
 
 #include <array>
 #include <atomic>
@@ -38,7 +38,7 @@ namespace SDK
 
     private:
         uint8_t* AllocateParams(size_t Size, bool& UsedHeap);
-        void CleanupParams(uint8_t* Parms, bool UsedHeap);
+        void CleanUpParams(uint8_t* Parms, bool UsedHeap);
 
         template <size_t N>
         void WriteInputArgs(uint8_t* Parms, FunctionArgInfo<N>& FunctionArgs, Args&&... args);
@@ -51,7 +51,7 @@ namespace SDK
         void InitializeArgInfo(const UFunction* Function, FunctionArgInfo<N>& FunctionArgs);
     };
 
-    // My head hurts
+    // TODO: Add improvements for intellisense instead of this. Intellisense is so bad at handling NTTPs
     //
 
     template <typename T>
@@ -89,6 +89,10 @@ namespace SDK
     public:
         using Base = typename PECallWrapperSelector<ClassName, FunctionName, FunctionSig>::type;
 
+        // PECallWrapper allows const UObject* as input for API consistency.
+        // const is only promised at C++ level, UESDK does not guarentee UE will
+        // not modify the object in a non-const way.
+
         /**
          * @brief Calls a ProcessEvent function.
          * @brief Requires the following:
@@ -104,19 +108,23 @@ namespace SDK
          * @throws std::bad_alloc - If allocating memory for parameters on the stack failed.
          * @throws std::logic_error - If a return type was specified, but the UFunction does not have a return type.
          */
-        template <typename... Args>
-        auto Call(UObject* Obj, UFunction* Function, Args... args)
+        template <typename UObjectType, typename... Args>
+        auto Call(UObjectType* Obj, UFunction* Function, Args... args)
         {
-            return Base::Call(Obj, Function, args...);
+            static_assert(std::is_base_of_v<SDK::UObject, std::remove_const_t<UObjectType>>,
+                "Obj must be a UObject or const UObject");
+            return Base::Call(const_cast<std::remove_const_t<UObjectType>*>(Obj), Function, args...);
         }
 
         /** @brief Wrapper to automatically find UFunction from template parameters. For full documentation read PECallWrapper::Call. */
-        template <typename... Args>
-        auto CallAuto(UObject* Obj, Args... args)
+        template <typename UObjectType, typename... Args>
+        auto CallAuto(UObjectType* Obj, Args... args)
         {
-            return Base::CallAuto(Obj, args...);
+            static_assert(std::is_base_of_v<SDK::UObject, std::remove_const_t<UObjectType>>,
+                "Obj must be a UObject or const UObject");
+            return Base::CallAuto(const_cast<std::remove_const_t<UObjectType>*>(Obj), args...);
         }
     };
 }
 
-#include <uesdk/PECallWrapper.inl>
+#include <uesdk/helpers/PECallWrapper.inl>

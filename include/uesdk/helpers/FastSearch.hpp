@@ -1,16 +1,13 @@
 #pragma once
-#include <uesdk/UnrealEnums.hpp>
-#include <uesdk/UnrealTypes.hpp>
+#include <uesdk/core/UnrealEnums.hpp>
+#include <uesdk/core/UnrealTypes.hpp>
+
 #include <vector>
 
 namespace SDK
 {
     /**
      * @brief Used to find a UObject matching the specified EClassCastFlags.
-     *
-     * @param[in] ObjectName - Name of the UObject to find.
-     * @param[in] (optional) RequiredType - Required EClassCastFlags for the target UObject.
-     * @param[in,out] OutObject -  Pointer to the output T*, no value is written if unfound.
      */
     struct FSUObject
     {
@@ -18,29 +15,43 @@ namespace SDK
         EClassCastFlags RequiredType;
         class UObject** OutObject;
 
+        /**
+         * @brief Construct an FSUObject search entry without a required type.
+         *
+         * @tparam T - A type derived from UObject.
+         * @param[in] ObjectName - Name of the UObject to find.
+         * @param[in,out] OutObject - Pointer to the output T*, no value is written if unfound.
+         */
         template <typename T>
-        explicit FSUObject(const std::string& ObjectName, uint64_t RequiredType, T** OutObject)
-            : ObjectName(FName(ObjectName))
-            , RequiredType((EClassCastFlags)(RequiredType))
-            , OutObject(reinterpret_cast<class UObject**>(OutObject))
-        {
-        }
-        template <typename T>
-        explicit FSUObject(const std::string& ObjectName, T** OutObject)
+        explicit FSUObject(std::string_view ObjectName, T** OutObject)
             : ObjectName(FName(ObjectName))
             , RequiredType(CASTCLASS_None)
             , OutObject(reinterpret_cast<class UObject**>(OutObject))
         {
+            static_assert(std::is_base_of_v<UObject, T>, "T must derive from UObject.");
+        }
+
+        /**
+         * @brief Construct an FSUObject search entry with a required type.
+         *
+         * @tparam T - A type derived from UObject.
+         * @param[in] ObjectName - Name of the UObject to find.
+         * @param[in] RequiredType - Required EClassCastFlags for the target UObject.
+         * @param[in,out] OutObject - Pointer to the output T*, no value is written if unfound.
+         */
+        template <typename T>
+        explicit FSUObject(std::string_view ObjectName, uint64_t RequiredType, T** OutObject)
+            : ObjectName(FName(ObjectName))
+            , RequiredType(static_cast<EClassCastFlags>(RequiredType))
+            , OutObject(reinterpret_cast<class UObject**>(OutObject))
+        {
+            static_assert(std::is_base_of_v<UObject, T>, "T must derive from UObject.");
         }
     };
 
     /**
      * @brief Used to find a UFunction member of a UClass.
-     * @brief This does not search inhereted classes, so make sure you use the exact class name that contains the member you want.
-     *
-     * @param[in] ClassName - Name of the target UClass.
-     * @param[in] FunctionName - Name of the target UFunction.
-     * @param[in,out] (optional) OutFunction - Pointer to the output UFunction*, no value is written if unfound.
+     * @brief This does not search inherited classes, so make sure you use the exact class name that contains the member you want.
      */
     struct FSUFunction
     {
@@ -48,7 +59,14 @@ namespace SDK
         FName FunctionName;
         class UFunction** OutFunction;
 
-        explicit FSUFunction(const std::string& ClassName, const std::string& FunctionName, class UFunction** OutFunction)
+        /**
+         * @brief Construct an FSUFunction search entry.
+         *
+         * @param[in] ClassName - Name of the target UClass.
+         * @param[in] FunctionName - Name of the target UFunction.
+         * @param[in,out] OutFunction - Pointer to the output UFunction*, no value is written if unfound.
+         */
+        explicit FSUFunction(std::string_view ClassName, std::string_view FunctionName, class UFunction** OutFunction)
             : ClassName(FName(ClassName))
             , FunctionName(FName(FunctionName))
             , OutFunction(OutFunction)
@@ -58,11 +76,6 @@ namespace SDK
 
     /**
      * @brief Used to find the enumerator value for a UEnum.
-     *
-     * @param[in] EnumName - Name of the target UEnum.
-     * @param[in] EnumeratorName - Name of the target enumerator.
-     * @param[in,out] (optional) OutEnumeratorValue - Pointer to the output enumerator value, no value is written if unfound.
-     * @param[in,out] (optional) OutEnum - Pointer to the output UEnum*, no value is written if unfound.
      */
     struct FSUEnum
     {
@@ -71,14 +84,30 @@ namespace SDK
         int64_t* OutEnumeratorValue;
         class UEnum** OutEnum;
 
-        explicit FSUEnum(const std::string& EnumName, const std::string& EnumeratorName, int64_t* OutEnumeratorValue, class UEnum** OutEnum)
+        /**
+         * @brief Construct an FSUEnum search entry with both output value and UEnum.
+         *
+         * @param[in] EnumName - Name of the target UEnum.
+         * @param[in] EnumeratorName - Name of the target enumerator.
+         * @param[in,out] OutEnumeratorValue - Pointer to the output enumerator value, no value is written if unfound.
+         * @param[in,out] OutEnum - Pointer to the output UEnum*, no value is written if unfound.
+         */
+        explicit FSUEnum(std::string_view EnumName, std::string_view EnumeratorName, int64_t* OutEnumeratorValue, class UEnum** OutEnum)
             : EnumName(FName(EnumName))
             , EnumeratorName(FName(EnumeratorName))
             , OutEnumeratorValue(OutEnumeratorValue)
             , OutEnum(OutEnum)
         {
         }
-        explicit FSUEnum(const std::string& EnumName, const std::string& EnumeratorName, int64_t* OutEnumeratorValue)
+
+        /**
+         * @brief Construct an FSUEnum search entry with only output enumerator value.
+         *
+         * @param[in] EnumName - Name of the target UEnum.
+         * @param[in] EnumeratorName - Name of the target enumerator.
+         * @param[in,out] OutEnumeratorValue - Pointer to the output enumerator value, no value is written if unfound.
+         */
+        explicit FSUEnum(std::string_view EnumName, std::string_view EnumeratorName, int64_t* OutEnumeratorValue)
             : EnumName(FName(EnumName))
             , EnumeratorName(FName(EnumeratorName))
             , OutEnumeratorValue(OutEnumeratorValue)
@@ -89,36 +118,36 @@ namespace SDK
 
     /**
      * @brief Used to find a property member of a UClass.
-     * @brief This does not search inhereted classes, so make sure you use the exact class name that contains the member you want.
-     *
-     * @param[in] ClassName - Name of the target UClass.
-     * @param[in] PropertyName - Name of the target property.
-     * @param[in,out] (optional) OutOffset - Pointer to the output offset, no value is written if unfound.
-     * @param[in,out] (optional) OutMask - Pointer to the output bitmask, no value is written if unfound or unsupported on property type.
+     * @brief This does not search inherited classes, so make sure you use the exact class name that contains the member you want.
      */
     struct FSProperty
     {
         FName ClassName;
         FName PropertyName;
-        int32_t* OutOffset;
-        uint8_t* OutMask;
+        PropertyInfo* OutPropInfo;
 
-        explicit FSProperty(const std::string& ClassName, const std::string& PropertyName, int32_t* OutOffset, uint8_t* OutMask)
+        /**
+         * @brief Construct a FSProperty search entry.
+         *
+         * @param[in] ClassName - Name of the target UClass.
+         * @param[in] PropertyName - Name of the target property.
+         * @param[in,out] OutPropInfo - Pointer to the output property info, no value is written if unfound.
+         */
+        explicit FSProperty(const std::string& ClassName, const std::string& PropertyName, PropertyInfo* OutPropInfo)
             : ClassName(FName(ClassName))
             , PropertyName(FName(PropertyName))
-            , OutOffset(OutOffset)
-            , OutMask(OutMask)
+            , OutPropInfo(OutPropInfo)
         {
         }
     };
 
     /** @brief Internal use only. Refer to other structs prefixed with FS. */
-    enum FSType
+    enum class FSType
     {
-        FS_UOBJECT,
-        FS_UENUM,
-        FS_UFUNCTION,
-        FS_PROPERTY,
+        UObject,
+        UEnum,
+        UFunction,
+        Property,
     };
 
     /** @brief Internal use only. Refer to other structs prefixed with FS. */
@@ -128,35 +157,35 @@ namespace SDK
         union
         {
             struct FSUObject Object;
-            struct FSProperty Property;
-            struct FSUEnum Enum;
             struct FSUFunction Function;
+            struct FSUEnum Enum;
+            struct FSProperty Property;
         };
 
         FSEntry(const FSUObject& Object)
-            : Type(FS_UOBJECT)
+            : Type(FSType::UObject)
             , Object(Object)
         {
         }
-        FSEntry(const FSUEnum& Enum)
-            : Type(FS_UENUM)
-            , Enum(Enum)
-        {
-        }
         FSEntry(const FSUFunction& Function)
-            : Type(FS_UFUNCTION)
+            : Type(FSType::UFunction)
             , Function(Function)
         {
         }
+        FSEntry(const FSUEnum& Enum)
+            : Type(FSType::UEnum)
+            , Enum(Enum)
+        {
+        }
         FSEntry(const FSProperty& Property)
-            : Type(FS_PROPERTY)
+            : Type(FSType::Property)
             , Property(Property)
         {
         }
     };
 
     /** @brief UClass wrapper for FSUObject. */
-    inline FSUObject FSUClass(const std::string& ObjectName, class UClass** OutClass) { return FSUObject(ObjectName, CASTCLASS_UClass, OutClass); }
+    inline FSUObject FSUClass(std::string_view ObjectName, class UClass** OutClass) { return FSUObject(ObjectName, OutClass); }
 }
 
 namespace SDK

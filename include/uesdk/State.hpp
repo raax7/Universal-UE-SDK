@@ -3,6 +3,8 @@
 /** @brief This namespace is managed by the library. Do not write to any values. */
 namespace SDK::State
 {
+    inline bool Setup = false;
+
     inline bool UsesChunkedGObjects = true;
     inline bool UsesFProperty = false;
 

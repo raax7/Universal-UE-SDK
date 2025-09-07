@@ -3,29 +3,33 @@
 
 namespace SDK
 {
-    Status Init()
+    ESDKStatus Init()
     {
+        if (State::Setup)
+            return ESDKStatus::Failed_AlreadySetup;
+
         if (!OffsetFinder::FindFMemoryRealloc())
-            return Status::Failed_FMemoryRealloc;
+            return ESDKStatus::Failed_FMemoryRealloc;
 
         if (!OffsetFinder::FindGObjects())
-            return Status::Failed_GObjects;
+            return ESDKStatus::Failed_GObjects;
 
         if (!OffsetFinder::FindFNameConstructorNarrow())
-            return Status::Failed_NarrowFNameConstructor;
+            return ESDKStatus::Failed_NarrowFNameConstructor;
 
         if (!OffsetFinder::FindFNameConstructorWide())
-            return Status::Failed_WideFNameConstructor;
+            return ESDKStatus::Failed_WideFNameConstructor;
 
         if (!OffsetFinder::FindAppendString())
-            return Status::Failed_AppendString;
+            return ESDKStatus::Failed_AppendString;
 
-        if (const auto Status = OffsetFinder::SetupMemberOffsets(); Status != Status::Success)
+        if (const auto Status = OffsetFinder::SetupMemberOffsets(); Status != ESDKStatus::Success)
             return Status;
 
         if (!OffsetFinder::FindProcessEventIdx())
-            return Status::Failed_ProcessEvent;
+            return ESDKStatus::Failed_ProcessEvent;
 
-        return Status::Success;
+        State::Setup = true;
+        return ESDKStatus::Success;
     }
 }

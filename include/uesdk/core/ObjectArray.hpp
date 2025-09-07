@@ -1,5 +1,6 @@
 #pragma once
-#include <uesdk/UnrealEnums.hpp>
+#include <uesdk/core/UnrealEnums.hpp>
+
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -60,16 +61,18 @@ namespace SDK
         class UObject* GetByIndex(const int32_t Index) const;
     };
 
-    /** @brief Simple wrapper to support both chunked and fixed object arrays. */
+    /** @brief Wrapper to support both chunked and fixed GObjects. */
     class TUObjectArray
     {
     public:
         TUObjectArray(bool IsChunked, void* Objects);
 
-    private:
-        bool m_IsChunked;
-        Chunked_TUObjectArray* m_ChunkedObjects;
-        Fixed_TUObjectArray* m_FixedObjects;
+    public:
+        /** @brief Returns whether underlying GObjects is chunked or fixed. */
+        bool IsChunked();
+
+        /** @brief Returns underlying chunked or fixed GObjects pointer. */
+        void* Get();
 
     public:
         int32_t Num();
@@ -123,9 +126,14 @@ namespace SDK
         {
             return FindObjectFast<class UClass>(ClassName, CASTCLASS_UClass);
         }
+
+    private:
+        bool m_IsChunked;
+        Chunked_TUObjectArray* m_ChunkedObjects;
+        Fixed_TUObjectArray* m_FixedObjects;
     };
 
     inline std::unique_ptr<TUObjectArray> GObjects = nullptr;
 }
 
-#include <uesdk/ObjectArray.inl>
+#include <uesdk/core/ObjectArray.inl>

@@ -1,5 +1,6 @@
 #pragma once
-#include <uesdk/Macros.hpp>
+#include <uesdk/helpers/PropertyInfo.hpp>
+
 #include <cstdint>
 
 namespace SDK::Offsets
