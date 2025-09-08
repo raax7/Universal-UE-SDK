@@ -1,17 +1,17 @@
 ﻿<h1 align="center">Universal-UE-SDK</h1>
 
-<p align="center">A simple UE4 and UE5 wrapper for fundamental internal Unreal-Engine structs, classes and functionality.
+<p align="center">A simple UE4 & UE5 wrapper for fundamental Unreal-Engine structs, classes and functionality.
 </p>
 <p align="center">
-  If you found this useful, please join the Discord server and star the project!<br>
-  This project is still under development. Any and all help and bug reporting is appreciated!<br>
+  If you found this useful, please join the Discord server and star the repo!<br>
+  UESDK is still under development, so any and all help or bug reporting is appreciated!<br>
   A lot of the code from this repo is taken from Dumper-7, so please go over and star them too.
 </p>
 
 <p align="center">
-	<a href="https://2ly.link/26uAo">Discord Server</a> |
-	<a href="https://github.com/raax7/Universal-UE-SDK/issues">Report an Issue</a> |
-	<a href="https://github.com/Encryqed/Dumper-7">Dumper-7</a>
+    <a href="https://2ly.link/26uAo">Discord Server</a> |
+    <a href="https://github.com/raax7/Universal-UE-SDK/issues">Report an Issue</a> |
+    <a href="https://github.com/Encryqed/Dumper-7">Dumper-7</a>
 </p>
 <p align="center">
     <img alt="Stars" src="https://img.shields.io/github/stars/raax7/Universal-UE-SDK?color=blue&style=for-the-badge">
@@ -22,6 +22,7 @@
     <li><a href="#credits">Credits</a></li>
     <li><a href="#project-info">Project Info</a></li>
     <li><a href="#how-to-help">How to Help</a></li>
+    <li><a href="#examples">Examples</a></li>
     <li><a href="#how-to-use">How to Use</a></li>
 </ol>
 
@@ -32,16 +33,19 @@
 
 
 ## Project Info
-### Unreal-Engine version support
-I only plan to support UE4 and UE5 with this project, UE3 is not planned.  
-Linux support is not planned.
+Universal-UE-SDK (uesdk) is a universal SDK framework for UE4 & UE5. UESDK offers fundemental Unreal-Engine structures as well as some convenience features such as PECallWrapper.
 
-### What this project is
-This project is designed to help simplify the process of making an Unreal-Engine mod support multiple Unreal-Engine versions. This project offers simple and useful wrappers for fundamental features of Unreal-Engine such as UObject, UClass, FName, FString, TArray, etc.
-### What this project is NOT
-This project is NOT designed to be a complete SDK with other fundamental classes like AActor, APlayerController, UWorld, UEngine, etc. This is simply a framework for making creating those classes and structures significantly easier. This project will not be able to support modified versions of Unreal-Engine, I only plan to support base UE4 and UE5 versions.
+This project is designed to simplify making an Unreal-Engine mod support multiple Unreal-Engine versions, offering runtime solutions for an SDK as opposed to compile-time solutions like Dumper-7. UESDK does not come pre-loaded with classes like AActor, UWorld, UEngine, etc and instead gives the user full control.
 
-### Differences from Dumper-7
+### Compiler Support
+- **MSVC** (recommended, full support)
+- **Clang** (partial support, may work with MSVC compatibility extensions)
+- **GCC** (not officially supported)
+
+### Unreal-Engine support
+Both **UE4** & **UE5** are officially supported. There are currently no plans for UE3 support.
+
+### Differences between Dumper-7
 Although this project takes a lot of inspiration from Dumper-7, it serves a different purpose.  
 Dumper-7 generates a static SDK that is tied to a specific game build, whereas this project focuses on providing wrappers for more dynamic, runtime SDK usage.
 | Feature                   | Dumper-7 | Universal-UE-SDK     |
@@ -53,26 +57,227 @@ Dumper-7 generates a static SDK that is tied to a specific game build, whereas t
 
 
 ## How to Help
-This project is fairly early into development and will likely have lots of bugs, incorrect/incomplete structures and classes, design flaws, etc. I am open to any and all suggestions. If you have any problems using this library, please open an issue and I will help you fix it, or fix the library if needed.
+UESDK is still early in development and may contain bugs, incorrect or incomplete structures, design issues, etc. If you come across an issue whilst using UESDK, feel free to open an issue on GitHub!
+
+
+## Examples
+### Listing information for every AActor:
+This example covers:
+- Making custom classes extended from UObject.
+- Using reflection macros to handle reflected members.
+- Using PECallWrapper to call process-event functions easily.
+- Iterating GObjects.
+- Casting UObjects.
+
+```C++
+#include <uesdk.hpp>
+#include <print>
+
+// UE4 uses float for matrices, UE5 uses double.
+// Uncomment for UE5:
+// #define UE5
+
+#ifdef UE5
+using MatrixType = double;
+#else
+using MatrixType = float;
+#endif
+
+struct FVector {
+    MatrixType X, Y, Z;
+};
+
+
+// Dummy declaration for compilation.
+class USceneComponent;
+
+
+// Reflected AActor class.
+class AActor : public SDK::UObject {
+private:
+    // Sets up class as a reflected UObject class.
+    // UESDK_STRUCT should be used for structs like FActorTickFunction.
+    UESDK_UOBJECT("Actor", AActor);
+    
+public:
+    // Setup of custom offset property.
+    constexpr static auto CustomOffset = 0; // Offset of VFT
+    UESDK_UPROPERTY_OFFSET(void*, Custom, CustomOffset);
+
+    // Setup of bit-field property (with fallback to bool).
+    UESDK_UPROPERTY_BITFIELD(bHidden);
+
+    // Setup of standard property.
+    UESDK_UPROPERTY(USceneComponent*, RootComponent);
+
+public:
+    /*
+    * PECallWrapper wraps UObject::ProcessEvent calls into a simple function signature.
+    * 
+    * Typically, calling a PE function requires a parameter struct and manual output parameter handling.
+    * PECallWrapper automatically manages a parameter buffer and handles output parameters.
+    */
+
+    // Example const-function with return value.
+    FVector K2_GetActorLocation() const {
+        static SDK::PECallWrapper<"Actor", "K2_GetActorLocation", FVector()> Function;
+        return Function.CallAuto(this);
+    }
+
+    // Example function with input parameters.
+    void K2_SetActorLocation(
+        const FVector& NewLocation,
+        bool bSweep,
+        FHitResult* SweepHitResult,
+        bool bTeleport
+    )
+    {
+        static SDK::PECallWrapper<"Actor", "K2_SetActorLocation", void(const FVector&, bool, FHitResult*, bool)> Function;
+        Function.CallAuto(this, NewLocation, bSweep, SweepHitResult, bTeleport);
+    }
+};
+
+
+bool ListActorInfo()
+{
+    // Initialize SDK.
+    if (SDK::Init() != SDK::ESDKStatus::Success)
+        return false;
+
+    // Loop through every UObject.
+    for (int i = 0; i < SDK::GObjects->Num(); i++) {
+        const SDK::UObject* Obj = SDK::GObjects->GetByIndex(i);
+
+        // Check if the object is valid, not a default object and is or inherits from AActor.
+        if (!Obj || Obj->IsDefaultObject())
+            continue;
+
+        // Cast<T> is a type-safe UE cast, returning nullptr if the cast is invalid.
+        const AActor* Actor = SDK::Cast<AActor>(Obj);
+        if (!Actor)
+            continue;
+
+        // Get the actor's location using our custom function.
+        FVector ActorPos = Actor->K2_GetActorLocation();
+
+        // We can access members, including bit-field members, as if they were standard members.
+        // This is thanks to MSVCs "virtual member" functionality, sorry Clang & GCC users.
+        void*               Custom          = Actor->Custom;        // custom
+        bool                bHidden         = Actor->bHidden;       // bit-field
+        USceneComponent*    RootComponent   = Actor->RootComponent; // standard
+
+        // We can also interface with standard UE types like UObject::Name and convert to a std::string.
+        std::string ActorName = Obj->Name.ToString();
+
+        // Output gathered information.
+        std::println("ActorName:        {}", ActorName);
+        std::println("ActorPos:         X,Y,Z -> {:.2f}, {:.2f}, {:.2f}", ActorPos.X, ActorPos.Y, ActorPos.Z);
+        std::println("Custom:           {}", fmt::ptr(Custom));
+        std::println("bHidden:          {}", bHidden);
+        std::println("RootComponent:    {}", fmt::ptr(RootComponent));
+        std::println();
+    }
+
+    return true;
+}
+```
+
+---
+
+### Getting basic UE information using FastSearch.
+This example covers:
+- Using FastSearch & FastSearchSingle.
+- Finding a UClass.
+- Finding a UFunction.
+- Finding an enumerator value.
+- Getting property info.
+
+```C++
+#include <uesdk.hpp>
+#include <print>
+
+bool FindObjects()
+{
+    // Initialize SDK.
+    if (SDK::Init() != SDK::ESDKStatus::Success)
+        return false;
+
+    // Prepare output variables for searching.
+    SDK::UClass*        ActorClass = nullptr;
+    SDK::UFunction*     K2_GetActorLocation = nullptr;
+    int64_t             ROLE_Authority = 0;
+    SDK::PropertyInfo   RootComponent{};
+
+    // Create vector to hold SDK::FSEntry.
+    std::vector<SDK::FSEntry> Entries = {
+        SDK::FSUClass(      "Actor",                            &ActorClass),
+        SDK::FSUFunction(   "Actor",    "K2_GetActorLocation",  &K2_GetActorLocation),
+        SDK::FSUEnum(       "ENetRole", "ROLE_Authority",       &ROLE_Authority),
+        SDK::FSProperty(    "Actor",    "RootComponent",        &RootComponent),
+    };
+
+    // Attempt to find all entries, returning false if any weren't found.
+    // Entries that are unfound are left in Entries, any found are removed.
+    if (!SDK::FastSearch(Entries))
+        return false;
+
+
+    // Prepare output variable for single searching.
+    SDK::UClass* SceneComponent = nullptr;
+
+    // Call small wrapper for FastSearch to search for a single SDK::FSEntry.
+    if (!SDK::FastSearchSingle(SDK::FSUClass("SceneComponent", &SceneComponent)))
+        return false;
+
+    // Output gathered information from SDK::FastSearch.
+    std::println("FastSearch:");
+    std::println("  ActorClass:           {}", fmt::ptr(ActorClass));
+    std::println("  K2_GetActorLocation:  {}", fmt::ptr(K2_GetActorLocation));
+    std::println("  ROLE_Authority:       {}", ROLE_Authority);
+    std::println("  RootComponent:        {}", RootComponent.Offset);
+    std::println();
+
+    // Output gathered information from SDK::FastSearchSingle.
+    std::println("FastSearchSingle:");
+    std::println("  SceneComponent:       {}", fmt::ptr(SceneComponent));
+    std::println();
+
+    return true;
+}
+```
 
 
 ## How to Use
 ### Setting up library
-This project uses CMake, meaning we highly recommend that you make your project with CMake. It is possible to use this library without, but using CMake just makes the whole process easier. If you want to use it without, you should include the header files in your project and build the .lib file and manually include it in your project.
-<br/><br/>
-If you wish to use this library with CMake and don't know how, there are plenty of tutorials online. Simply Google something like "How to make a DLL in CMake" and then after you've done that Google something like "How to include a library in CMake". This library has a dependency so make sure to recursively clone the git project, or add the project as a git submodule.
-
-### Using the library
-Every function that you can call in the library should have thorough documentation, so if you are wondering what a function does simply read its documentation.
-
-To see complete examples, take a look at the `examples` folder.
-
-To use the library, first you need to include ``UESDK.hpp``.
-```C++
-#include <UESDK.hpp>
+UESDK uses CMake as it's build system meaning you can simply build in the command line.  
+This will generate the required library files, allowing you to link with any compiler you wish.
+```
+cmake -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
 ```
 
-After including the main header file, you need to init the SDK before using any other SDK related function. You should check the status return value to make sure it initiated successfully.
+---
+
+Alternatively, if you are using CMake for your own project, you can add UESDK as a sub directory with something like:
+```cmake
+add_subdirectory(extern/uesdk)
+# ...
+target_include_directories(ProjectName PRIVATE extern/uesdk/include)
+target_link_libraries(ProjectName PRIVATE uesdk)
+```
+
+### Using the library
+#### Prerequisites
+All functions and classes should have clear documentation, so if you are ever stuck remember to consult the documentation first.
+
+It's important to note that UESDK should only ever be used from inside Unreal-Engine's "game thread", as nearly every piece of functionality relies on objects only safely accessible from within said thread.
+
+#### Basic Usage
+To use the library include ``uesdk.hpp``.
+```C++
+#include <uesdk.hpp>
+```
+
+After including the main header file, you should initialize the SDK before attempting to use it. It is important to check that initialization succeeded since failure is possible.
 ```C++
 const auto Status = SDK::Init();
 if (Status != SDK::Status::Success)
@@ -81,43 +286,4 @@ if (Status != SDK::Status::Success)
 }
 ```
 
-After you've done this you can safely use the SDK.  
-
-Here is an example of listing every AActor's name and location:
-```C++
-// UE4 uses float for matrices, UE5 uses double.
-using MatrixType = float;
-
-struct FVector {
-    MatrixType X, Y, Z;
-};
-
-bool ListActorNamesAndLocations()
-{
-    // Get a pointer to the UClass for AActor.
-    SDK::UClass* ActorClass = nullptr;
-    if (!FastSearchSingle(FSUClass("Actor", &ActorClass)))
-        return false;
-
-    // Loop through every UObject.
-    for (int i = 0; i < SDK::GObjects->Num(); i++) {
-        SDK::UObject* Obj = SDK::GObjects->GetByIndex(i);
-
-        // Check if the object is valid, not a default object and is or inherits from AActor.
-        if (!Obj || Obj->IsDefaultObject() || !Obj->IsA(ActorClass))
-            continue;
-
-        // Use PECallWrapper to call the UFunction, this way the library will automatically setup the parameters struct for you.
-        static SDK::PECallWrapper<"Actor", "K2_GetActorLocation", FVector()> K2_GetActorLocation;
-
-        FVector ActorPos = K2_GetActorLocation.CallAuto(Obj);
-        std::string ActorName = Obj->Name.ToString();
-
-        // Output the actor name and position.
-        std::cout << ActorName << '\n';
-        std::cout << "X: " << ActorPos.X << "\nY: " << ActorPos.Y << "\nZ: " << ActorPos.Z << "\n\n";
-    }
-
-    return true;
-}
-```
+After this, you can safely use the SDK.
