@@ -33,7 +33,7 @@
 
 
 ## Project Info
-Universal-UE-SDK (uesdk) is a universal SDK framework for UE4 & UE5. UESDK offers fundemental Unreal-Engine structures as well as some convenience features such as PECallWrapper.
+Universal-UE-SDK (UESDK) is a universal SDK framework for UE4 & UE5. UESDK offers fundemental Unreal-Engine structures as well as some convenience features such as PECallWrapper.
 
 This project is designed to simplify making an Unreal-Engine mod support multiple Unreal-Engine versions, offering runtime solutions for an SDK as opposed to compile-time solutions like Dumper-7. UESDK does not come pre-loaded with classes like AActor, UWorld, UEngine, etc and instead gives the user full control.
 
@@ -100,14 +100,14 @@ private:
     UESDK_UOBJECT("Actor", AActor);
     
 public:
-    // Setup of custom offset property.
+    // Setup custom offset property.
     constexpr static auto CustomOffset = 0; // Offset of VFT
     UESDK_UPROPERTY_OFFSET(void*, Custom, CustomOffset);
 
-    // Setup of bit-field property (with fallback to bool).
+    // Setup bit-field property (with fallback to bool).
     UESDK_UPROPERTY_BITFIELD(bHidden);
 
-    // Setup of standard property.
+    // Setup standard property.
     UESDK_UPROPERTY(USceneComponent*, RootComponent);
 
 public:
@@ -254,8 +254,6 @@ This will generate the required library files, allowing you to link with any com
 ```
 cmake -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
 ```
-
----
 
 Alternatively, if you are using CMake for your own project, you can add UESDK as a sub directory with something like:
 ```cmake
