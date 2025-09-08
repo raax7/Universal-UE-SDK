@@ -3,7 +3,7 @@
 <p align="center">A simple UE4 & UE5 wrapper for fundamental Unreal-Engine structs, classes and functionality.
 </p>
 <p align="center">
-  If you found this useful, please join the Discord server and star the repo!<br>
+  If you found the project useful, feel free to join the Discord and star the repo!<br>
   UESDK is still under development, so any and all help or bug reporting is appreciated!<br>
   A lot of the code from this repo is taken from Dumper-7, so please go over and star them too.
 </p>
@@ -28,22 +28,24 @@
 
 
 ## Credits
-- [Dumper-7](https://github.com/Encryqed/Dumper-7) - Most of the fundamental structures and offset-finding methods are taken from Dumper-7, so huge credit to them. This project would not be possible without their open-source contributions. If you need a static SDK dumper for any Unreal Engine game, I highly recommend checking out Dumper-7.
+- [Dumper-7](https://github.com/Encryqed/Dumper-7) - Most fundamental structures and offset-finding methods are taken from Dumper-7, so huge credit to them. This project would not be possible without their open-source contributions. If you need a static SDK dumper for any Unreal Engine game, I highly recommend checking out Dumper-7.
 - [libhat](https://github.com/BasedInc/libhat) - A fast and easy-to-use pattern matcher, offering additional abstractions as well.
 
 
 ## Project Info
-Universal-UE-SDK (UESDK) is a universal SDK framework for UE4 & UE5. UESDK offers fundemental Unreal-Engine structures as well as some convenience features such as PECallWrapper.
+Universal-UE-SDK (UESDK) is a universal SDK framework for UE4 & UE5 offering fundemental Unreal-Engine structures as well as some convenience features such as PECallWrapper.
 
-This project is designed to simplify making an Unreal-Engine mod support multiple Unreal-Engine versions, offering runtime solutions for an SDK as opposed to compile-time solutions like Dumper-7. UESDK does not come pre-loaded with classes like AActor, UWorld, UEngine, etc and instead gives the user full control.
+UESDK is designed to simplify making an Unreal-Engine mod support multiple Unreal-Engine versions, offering runtime solutions for an SDK as opposed to compile-time solutions such as Dumper-7. UESDK does not come pre-loaded with classes like AActor, UWorld, UEngine, etc and instead gives the user full control.
 
 ### Compiler Support
 - **MSVC** (recommended, full support)
 - **Clang** (partial support, may work with MSVC compatibility extensions)
-- **GCC** (not officially supported)
+- **GCC** (not officially supported)  
+All compiler complications come from the use MSVC's "virtual member" feature.  
+Removing this from ReflectionMacros.hpp will result in full compatibility.
 
 ### Unreal-Engine support
-Both **UE4** & **UE5** are officially supported. There are currently no plans for UE3 support.
+Both **UE4** & **UE5** are officially supported. There are currently no plans to add support for UE3.
 
 ### Differences between Dumper-7
 Although this project takes a lot of inspiration from Dumper-7, it serves a different purpose.  
@@ -145,7 +147,7 @@ bool ListActorInfo()
         return false;
 
     // Loop through every UObject.
-    for (int i = 0; i < SDK::GObjects->Num(); i++) {
+    for (int32_t i = 0; i < SDK::GObjects->Num(); i++) {
         const SDK::UObject* Obj = SDK::GObjects->GetByIndex(i);
 
         // Check if the object is valid, not a default object and is or inherits from AActor.
