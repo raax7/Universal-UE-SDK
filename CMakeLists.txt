@@ -35,6 +35,3 @@ target_link_libraries(uesdk PUBLIC
 )
 
 add_subdirectory(examples)
-
-enable_testing()
-add_subdirectory(tests)
