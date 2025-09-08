@@ -130,11 +130,11 @@ public:
     void K2_SetActorLocation(
         const FVector& NewLocation,
         bool bSweep,
-        FHitResult* SweepHitResult,
+        struct FHitResult* SweepHitResult,
         bool bTeleport
     )
     {
-        static SDK::PECallWrapper<"Actor", "K2_SetActorLocation", void(const FVector&, bool, FHitResult*, bool)> Function;
+        static SDK::PECallWrapper<"Actor", "K2_SetActorLocation", void(const FVector&, bool, struct FHitResult*, bool)> Function;
         Function.CallAuto(this, NewLocation, bSweep, SweepHitResult, bTeleport);
     }
 };
