@@ -11,11 +11,11 @@ set(UESDK_SRC
     "src/uesdk.cpp"
     "src/private/Memory.cpp"
     "src/private/OffsetFinder.cpp"
-    "src/uesdk/FastSearch.cpp"
-    "src/uesdk/FMemory.cpp"
-    "src/uesdk/ObjectArray.cpp"
-    "src/uesdk/UnrealObjects.cpp"
-    "src/uesdk/UnrealTypes.cpp"
+    "src/uesdk/core/FMemory.cpp"
+    "src/uesdk/core/ObjectArray.cpp"
+    "src/uesdk/core/UnrealObjects.cpp"
+    "src/uesdk/core/UnrealTypes.cpp"
+    "src/uesdk/helpers/FastSearch.cpp"
 )
 
 add_library(uesdk STATIC ${UESDK_SRC})
