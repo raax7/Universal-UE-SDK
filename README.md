@@ -96,7 +96,7 @@ class USceneComponent;
 
 // Reflected AActor class.
 class AActor : public SDK::UObject {
-private:
+public:
     // Sets up class as a reflected UObject class.
     // UESDK_STRUCT should be used for structs like FActorTickFunction.
     UESDK_UOBJECT("Actor", AActor);
