@@ -7,6 +7,8 @@ namespace SDK
     class FName
     {
     public:
+        FName()
+        { }
         FName(const std::string& Str)
             : FName(Str.c_str())
         { }
