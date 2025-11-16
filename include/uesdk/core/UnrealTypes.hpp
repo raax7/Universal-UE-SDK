@@ -8,6 +8,8 @@ namespace SDK
     {
     public:
         FName()
+            : ComparisonIndex(0)
+            , Number(0)
         { }
         FName(const std::string& Str)
             : FName(Str.c_str())

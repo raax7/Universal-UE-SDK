@@ -5,6 +5,8 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_WARN_DEPRECATED OFF CACHE BOOL "" FORCE)
 
+set(BUILD_EXAMPLES OFF CACHE BOOL "Build examples")
+
 add_subdirectory(dependencies/libhat)
 
 set(UESDK_SRC
@@ -25,13 +27,14 @@ target_include_directories(uesdk PRIVATE
 )
 
 target_include_directories(uesdk PUBLIC
-    dependencies/libhat/include
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>
-    $<INSTALL_INTERFACE:include>
+    ${CMAKE_CURRENT_SOURCE_DIR}dependencies/libhat/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
 target_link_libraries(uesdk PUBLIC
     libhat
 )
 
-add_subdirectory(examples)
+if (BUILD_EXAMPLES)
+    add_subdirectory(examples)
+endif()
