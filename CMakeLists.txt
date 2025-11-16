@@ -18,6 +18,7 @@ set(UESDK_SRC
     "src/uesdk/core/UnrealObjects.cpp"
     "src/uesdk/core/UnrealTypes.cpp"
     "src/uesdk/helpers/FastSearch.cpp"
+    "src/uesdk/helpers/TlsArgBuffer.cpp"
 )
 
 add_library(uesdk STATIC ${UESDK_SRC})

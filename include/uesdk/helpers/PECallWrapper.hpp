@@ -1,6 +1,7 @@
 #pragma once
 #include <uesdk/Utils.hpp>
 #include <uesdk/core/UnrealObjects.hpp>
+#include <uesdk/helpers/TlsArgBuffer.hpp>
 
 #include <array>
 #include <atomic>
@@ -37,14 +38,23 @@ namespace SDK
         };
 
     private:
-        uint8_t* AllocateParams(size_t Size, bool& UsedHeap);
-        void CleanUpParams(uint8_t* Parms, bool UsedHeap);
-
         template <size_t N>
         void WriteInputArgs(uint8_t* Parms, FunctionArgInfo<N>& FunctionArgs, Args&&... args);
 
         template <size_t N>
-        void WriteOutputArgs(uint8_t* Parms, FunctionArgInfo<N>& FunctionArgs, Args&&... args);
+        void WriteOutputArgs(uint8_t* Parms, FunctionArgInfo<N>& FunctionArgs, Args&&... args, UFunction* Function);
+
+        template <typename Param>
+        static void DestroyParamSlot(uint8_t* ParmsBase, const ArgInfo& Info);
+
+        template <size_t N, typename... ParamTypes, size_t... I>
+        static void DestroyParmsImpl(uint8_t* ParmsBase, FunctionArgInfo<N>& FunctionArgs, std::index_sequence<I...>);
+
+        template <size_t N, typename... ParamTypes>
+        static void DestroyParms(uint8_t* ParmsBase, FunctionArgInfo<N>& FunctionArgs);
+
+        template <size_t N, typename... ParamTypes>
+        static void DestroyParmsWithReturn(uint8_t* ParmsBase, FunctionArgInfo<N>& FunctionArgs);
 
     private:
         template <size_t N>
@@ -78,7 +88,7 @@ namespace SDK
     };
 
     /**
-     * @brief Wrapper for calling a ProcessEvent function, automatically handling the parameter structure.
+     * @brief Wrapper for calling a ProcessEvent function, automatically handling the parameter(s) structure.
      *
      * @tparam ClassName and FunctionName - Used to for unique template instantiation, as well as automatic function finding.
      * @tparam FunctionSig - Function signature to read return type and argument type(s) from.
@@ -90,14 +100,14 @@ namespace SDK
         using Base = typename PECallWrapperSelector<ClassName, FunctionName, FunctionSig>::type;
 
         // PECallWrapper allows const UObject* as input for API consistency.
-        // const is only promised at C++ level, UESDK does not guarentee UE will
-        // not modify the object in a non-const way.
+        // const is only promised at C++ level, UESDK does not guarentee UE will not modify the object in a non-const way.
 
         /**
          * @brief Calls a ProcessEvent function.
-         * @brief Requires the following:
+         * @brief Important points:
          * @brief - All arguments must match the order they are in the original UFunction.
-         * @brief - Output arguments can be larger than the actual struct; only the real size of the struct will be copied.
+         * @brief - Output parameters must end with pointer or reference.
+         * @brief - Trivially copyable output parameters (e.g., FHitResult) can be any size; only the smaller of the output parameter or the actual struct is copied.
          *
          * @param[in] Function - A pointer to the UFunction to call.
          * @param[in,out] ...args - Arguments to be sent to the UFunction.
@@ -109,7 +119,7 @@ namespace SDK
          * @throws std::logic_error - If a return type was specified, but the UFunction does not have a return type.
          */
         template <typename UObjectType, typename... Args>
-        auto Call(UObjectType* Obj, UFunction* Function, Args... args)
+        auto Call(UObjectType* Obj, UFunction* Function, Args&&... args)
         {
             static_assert(std::is_base_of_v<SDK::UObject, std::remove_const_t<UObjectType>>,
                 "Obj must be a UObject or const UObject");
@@ -118,7 +128,7 @@ namespace SDK
 
         /** @brief Wrapper to automatically find UFunction from template parameters. For full documentation read PECallWrapper::Call. */
         template <typename UObjectType, typename... Args>
-        auto CallAuto(UObjectType* Obj, Args... args)
+        auto CallAuto(UObjectType* Obj, Args&&... args)
         {
             static_assert(std::is_base_of_v<SDK::UObject, std::remove_const_t<UObjectType>>,
                 "Obj must be a UObject or const UObject");
