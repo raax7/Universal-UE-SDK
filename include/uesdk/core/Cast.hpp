@@ -5,8 +5,16 @@
 
 namespace SDK
 {
+    /**
+     * @brief Safely casts a UObject pointer to another UObject type.
+     * @tparam T - Target UObject type.
+     * @tparam U - Source UObject type.
+     * @tparam ForceCast - If true, skips type checking and performs an unconditional cast.
+     * @param Obj - Pointer to the UObject to cast.
+     * @return Pointer to T if cast is valid; nullptr otherwise.
+     */
     template <typename T, bool ForceCast = false, typename U>
-        requires(std::is_base_of_v<UObject, T>&& std::is_base_of_v<UObject, std::remove_const_t<U>>)
+        requires(std::is_base_of_v<UObject, T> && std::is_base_of_v<UObject, std::remove_const_t<U>>)
     T* Cast(U* Obj)
     {
         if (!Obj)

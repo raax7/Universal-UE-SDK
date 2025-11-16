@@ -16,7 +16,7 @@ namespace SDK
     {
     private:
         // TODO: Decide whether to delete or keep constructor and destructor.
-        //UObject() = delete;
+        // UObject() = delete;
         //~UObject() = delete;
 
     public:

@@ -75,7 +75,10 @@ namespace SDK
         void* Get();
 
     public:
+        /** @brief Returns number of objects in object array. */
         int32_t Num();
+
+        /** @brief Returns UObject in object array by index. */
         class UObject* GetByIndex(int32_t Index);
 
     public:
