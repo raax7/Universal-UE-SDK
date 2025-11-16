@@ -42,15 +42,13 @@ namespace SDK
         Obj->ProcessEvent(Function, Parms.GetData());
         WriteOutputArgs(Parms.GetData(), FunctionArgs, std::forward<Args>(args)..., Function);
 
-        DestroyParmsWithReturn<sizeof...(Args), Args...>(Parms.GetData(), FunctionArgs);
+        DestroyParms<NumArgs, Args...>(Parms.GetData(), FunctionArgs);
 
         if constexpr (!IsVoidRetType) {
             if (!FunctionArgs.HasReturnValue)
                 throw std::logic_error("Mismatched return type: '" + Function->GetFullName() + "' expects no return value, but template specifies non-void return type");
 
-            ReturnType Return(
-                *reinterpret_cast<ReturnType*>(Parms.GetData() + FunctionArgs.ReturnValueOffset));
-            return std::move(Return);
+            return *reinterpret_cast<ReturnType*>(Parms.GetData() + FunctionArgs.ReturnValueOffset);
         }
     }
 
@@ -195,20 +193,6 @@ namespace SDK
             ParmsBase,
             FunctionArgs,
             std::make_index_sequence<sizeof...(ParamTypes)> {});
-    }
-
-    template <StringLiteral ClassName, StringLiteral FunctionName, typename ReturnType, typename... Args>
-    template <size_t N, typename... ParamTypes>
-    void PECallWrapperImpl<ClassName, FunctionName, ReturnType, Args...>::DestroyParmsWithReturn(uint8_t* ParmsBase, FunctionArgInfo<N>& FunctionArgs)
-    {
-        DestroyParms<N, ParamTypes...>(ParmsBase, FunctionArgs);
-
-        // Destroy return value if non-trivial
-        if constexpr (!std::is_trivially_destructible_v<ReturnType>) {
-            if (FunctionArgs.HasReturnValue) {
-                reinterpret_cast<ReturnType*>(ParmsBase + FunctionArgs.ReturnValueOffset)->~ReturnType();
-            }
-        }
     }
 
     template <StringLiteral ClassName, StringLiteral FunctionName, typename ReturnType, typename... Args>

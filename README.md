@@ -163,7 +163,7 @@ bool ListActorInfo()
         FVector ActorPos = Actor->K2_GetActorLocation();
 
         // We can access members, including bit-field members, as if they were standard members.
-        // This is thanks to MSVCs "virtual member" functionality, sorry Clang & GCC users.
+        // This is thanks to MSVCs "virtual member" functionality, sorry GCC & Clang users.
         void*               Custom          = Actor->Custom;        // custom
         bool                bHidden         = Actor->bHidden;       // bit-field
         USceneComponent*    RootComponent   = Actor->RootComponent; // standard
@@ -260,8 +260,6 @@ cmake -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
 Alternatively, if you are using CMake for your own project, you can add UESDK as a sub directory with something like:
 ```cmake
 add_subdirectory(extern/uesdk)
-# ...
-target_include_directories(ProjectName PRIVATE extern/uesdk/include)
 target_link_libraries(ProjectName PRIVATE uesdk)
 ```
 

@@ -53,9 +53,6 @@ namespace SDK
         template <size_t N, typename... ParamTypes>
         static void DestroyParms(uint8_t* ParmsBase, FunctionArgInfo<N>& FunctionArgs);
 
-        template <size_t N, typename... ParamTypes>
-        static void DestroyParmsWithReturn(uint8_t* ParmsBase, FunctionArgInfo<N>& FunctionArgs);
-
     private:
         template <size_t N>
         void InitializeArgInfo(const UFunction* Function, FunctionArgInfo<N>& FunctionArgs);
