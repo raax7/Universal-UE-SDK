@@ -39,7 +39,7 @@ namespace SDK
 
     private:
         template <size_t N>
-        void WriteInputArgs(uint8_t* Parms, FunctionArgInfo<N>& FunctionArgs, Args&&... args);
+        void WriteInputArgs(uint8_t* Parms, FunctionArgInfo<N>& FunctionArgs, Args&&... args, UFunction* Function);
 
         template <size_t N>
         void WriteOutputArgs(uint8_t* Parms, FunctionArgInfo<N>& FunctionArgs, Args&&... args, UFunction* Function);
@@ -112,7 +112,8 @@ namespace SDK
          * @return The value returned from the UFunction call.
          *
          * @throws std::invalid_argument - If an output argument pointer is not writable.
-         * @throws std::bad_alloc - If allocating memory for parameters on the stack failed.
+         * @throws std::invalid_argument - If a trivially copyable argument isn't big enough to fit all data.
+         * @throws std::bad_alloc - If allocating memory for parameters failed.
          * @throws std::logic_error - If a return type was specified, but the UFunction does not have a return type.
          */
         template <typename UObjectType, typename... Args>

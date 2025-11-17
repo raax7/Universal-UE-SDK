@@ -41,7 +41,7 @@ UESDK is designed to simplify making an Unreal-Engine mod support multiple Unrea
 - **MSVC** (recommended, full support)
 - **Clang** (partial support, may work with MSVC compatibility extensions)
 - **GCC** (not officially supported)  
-All compiler complications come from the use MSVC's "virtual member" feature.  
+All compiler compatibility issues come from the use of MSVC's "virtual member" feature.  
 Removing this from ReflectionMacros.hpp will result in full compatibility.
 
 ### Unreal-Engine support
@@ -94,13 +94,30 @@ struct FVector {
 class USceneComponent;
 
 
+// Trivially copyable POD struct for PECallWrapper.
+struct FHitResult {
+public:
+    // Allows same features as UESDK_UOBJECT (see below)
+    // without needing to inherit from UObject.
+    UESDK_STRUCT("HitResullt", FHitResult);
+
+public:
+    // Only the smaller of the struct and engine's actual size is copied when using PECallWrapper.
+    // Must be >= actual engine size to ensure full data is preserved across versions.
+    std::byte m_Pad[0x100];
+};
+
+// Verify struct is trivially-copyable and supports dynamic struct sizes in PECallWrapper.
+static_assert(std::is_trivially_copyable_v<FHitResult>);
+
+
 // Reflected AActor class.
 class AActor : public SDK::UObject {
 public:
     // Sets up class as a reflected UObject class.
     // UESDK_STRUCT should be used for structs like FActorTickFunction.
     UESDK_UOBJECT("Actor", AActor);
-    
+
 public:
     // Setup custom offset property.
     constexpr static auto CustomOffset = 0; // Offset of VFT
@@ -115,7 +132,7 @@ public:
 public:
     /*
     * PECallWrapper wraps UObject::ProcessEvent calls into a simple function signature.
-    * 
+    *
     * Typically, calling a PE function requires a parameter struct and manual output parameter handling.
     * PECallWrapper automatically manages a parameter buffer and handles output parameters.
     */
@@ -130,11 +147,11 @@ public:
     void K2_SetActorLocation(
         const FVector& NewLocation,
         bool bSweep,
-        struct FHitResult* SweepHitResult,
+        FHitResult& SweepHitResult,
         bool bTeleport
     )
     {
-        static SDK::PECallWrapper<"Actor", "K2_SetActorLocation", void(const FVector&, bool, struct FHitResult*, bool)> Function;
+        static SDK::PECallWrapper<"Actor", "K2_SetActorLocation", void(const FVector&, bool, FHitResult&, bool)> Function;
         Function.CallAuto(this, NewLocation, bSweep, SweepHitResult, bTeleport);
     }
 };
@@ -148,14 +165,14 @@ bool ListActorInfo()
 
     // Loop through every UObject.
     for (int32_t i = 0; i < SDK::GObjects->Num(); i++) {
-        const SDK::UObject* Obj = SDK::GObjects->GetByIndex(i);
+        static SDK::UObject* Obj = SDK::GObjects->GetByIndex(i);
 
         // Check if the object is valid, not a default object and is or inherits from AActor.
         if (!Obj || Obj->IsDefaultObject())
             continue;
 
         // Cast<T> is a type-safe UE cast, returning nullptr if the cast is invalid.
-        const AActor* Actor = SDK::Cast<AActor>(Obj);
+        static AActor* Actor = SDK::Cast<AActor>(Obj);
         if (!Actor)
             continue;
 
@@ -174,9 +191,9 @@ bool ListActorInfo()
         // Output gathered information.
         std::println("ActorName:        {}", ActorName);
         std::println("ActorPos:         X,Y,Z -> {:.2f}, {:.2f}, {:.2f}", ActorPos.X, ActorPos.Y, ActorPos.Z);
-        std::println("Custom:           {}", fmt::ptr(Custom));
+        std::println("Custom:           {}", Custom);
         std::println("bHidden:          {}", bHidden);
-        std::println("RootComponent:    {}", fmt::ptr(RootComponent));
+        std::println("RootComponent:    {}", reinterpret_cast<void*>(RootComponent));
         std::println();
     }
 
@@ -233,15 +250,15 @@ bool FindObjects()
 
     // Output gathered information from SDK::FastSearch.
     std::println("FastSearch:");
-    std::println("  ActorClass:           {}", fmt::ptr(ActorClass));
-    std::println("  K2_GetActorLocation:  {}", fmt::ptr(K2_GetActorLocation));
+    std::println("  ActorClass:           {}", reinterpret_cast<void*>(ActorClass));
+    std::println("  K2_GetActorLocation:  {}", reinterpret_cast<void*>(K2_GetActorLocation));
     std::println("  ROLE_Authority:       {}", ROLE_Authority);
     std::println("  RootComponent:        {}", RootComponent.Offset);
     std::println();
 
     // Output gathered information from SDK::FastSearchSingle.
     std::println("FastSearchSingle:");
-    std::println("  SceneComponent:       {}", fmt::ptr(SceneComponent));
+    std::println("  SceneComponent:       {}", reinterpret_cast<void*>(SceneComponent));
     std::println();
 
     return true;

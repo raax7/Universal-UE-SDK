@@ -38,7 +38,7 @@ namespace SDK
 
         TlsArgBuffer Parms(FunctionArgs.ParmsSize);
 
-        WriteInputArgs(Parms.GetData(), FunctionArgs, std::forward<Args>(args)...);
+        WriteInputArgs(Parms.GetData(), FunctionArgs, std::forward<Args>(args)..., Function);
         Obj->ProcessEvent(Function, Parms.GetData());
         WriteOutputArgs(Parms.GetData(), FunctionArgs, std::forward<Args>(args)..., Function);
 
@@ -70,11 +70,19 @@ namespace SDK
 
     template <StringLiteral ClassName, StringLiteral FunctionName, typename ReturnType, typename... Args>
     template <size_t N>
-    void PECallWrapperImpl<ClassName, FunctionName, ReturnType, Args...>::WriteInputArgs(uint8_t* Parms, FunctionArgInfo<N>& FunctionArgs, Args&&... args)
+    void PECallWrapperImpl<ClassName, FunctionName, ReturnType, Args...>::WriteInputArgs(uint8_t* Parms, FunctionArgInfo<N>& FunctionArgs, Args&&... args, UFunction* Function)
     {
-        auto WriteInputArg = [Parms](auto& Arg, ArgInfo& Info) {
+        auto WriteInputArg = [Parms, Function](auto& Arg, ArgInfo& Info) {
             using ArgType = std::decay_t<decltype(Arg)>;
-            new (Parms + Info.Offset) ArgType(std::forward<decltype(Arg)>(Arg));
+            if constexpr (std::is_trivially_copyable_v<ArgType>) {
+                if (sizeof(ArgType) < Info.Size)
+                    throw std::invalid_argument("Not enough room in trivially copyable struct! Increase struct size: '" + Function->GetFullName() + "\'");
+
+                std::memcpy(Parms + Info.Offset, &Arg, std::min<size_t>(sizeof(ArgType), Info.Size));
+            }
+            else {
+                new (Parms + Info.Offset) ArgType(std::forward<decltype(Arg)>(Arg));
+            }
         };
 
         size_t ArgIndex = 0;
@@ -101,7 +109,10 @@ namespace SDK
 
                     // Simple and fast memcpy for trivially copyable
                     if constexpr (std::is_trivially_copyable_v<PointeeType>) {
-                        std::memcpy(reinterpret_cast<void*>(Arg), Parms + Info.Offset, static_cast<size_t>(Info.Size));
+                        if (sizeof(PointeeType) < Info.Size)
+                            throw std::invalid_argument("Not enough room in trivially copyable struct! Increase struct size: '" + Function->GetFullName() + '\'');
+
+                        std::memcpy(reinterpret_cast<void*>(Arg), Parms + Info.Offset, std::min<size_t>(sizeof(PointeeType), Info.Size));
                     }
                     else {
                         // Assignment operator for non trivialy copyable
@@ -124,7 +135,7 @@ namespace SDK
                 }
                 else {
                     if constexpr (std::is_trivially_copyable_v<RefT>) {
-                        std::memcpy(reinterpret_cast<void*>(std::addressof(Arg)), Parms + Info.Offset, static_cast<size_t>(Info.Size));
+                        std::memcpy(reinterpret_cast<void*>(std::addressof(Arg)), Parms + Info.Offset, std::min<size_t>(sizeof(RefT), Info.Size));
                     }
                     else {
                         RefT* srcPtr = reinterpret_cast<RefT*>(Parms + Info.Offset);
