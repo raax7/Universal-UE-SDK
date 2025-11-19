@@ -9,12 +9,11 @@
 </p>
 
 <p align="center">
-    <a href="https://2ly.link/26uAo">Discord Server</a> |
-    <a href="https://github.com/raax7/Universal-UE-SDK/issues">Report an Issue</a> |
+    <a href="https://github.com/ilyida/Universal-UE-SDK/issues">Report an Issue</a> |
     <a href="https://github.com/Encryqed/Dumper-7">Dumper-7</a>
 </p>
 <p align="center">
-    <img alt="Stars" src="https://img.shields.io/github/stars/raax7/Universal-UE-SDK?color=blue&style=for-the-badge">
+    <img alt="Stars" src="https://img.shields.io/github/stars/ilyida/Universal-UE-SDK?color=blue&style=for-the-badge">
 </p>
 
 ## Table of Contents
